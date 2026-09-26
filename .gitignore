@@ -1,0 +1,10 @@
+# NOTE: .agent-logs/ must NEVER be ignored — it ships with the repo.
+node_modules/
+.next/
+.vercel/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+!.agent-logs/*.log
