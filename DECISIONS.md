@@ -465,3 +465,51 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** The user asked for history that shows the real build order; per-phase commits alone hid the slices.
 **Rejected:** One commit per phase; one commit per file.
 **Status:** Active. Phases 0–4 were committed per phase; Phase 5 onward per slice.
+
+### D-077 · 2026-09-26T12:30Z · Phase 6
+**Decision:** **The tracked link is built as specified in D-039 and hardened**: `/go/[code]` answers 302 first and records the click in `after()`; crawlers and link unfurlers are stored but flagged and never counted; HEAD requests and prefetches record nothing; the visitor id is `sha256(ip|ua|UTC day|secret)` (raw IPs are never stored, and the same person is unique once per day); referrers are kept as a host only; UTM parameters are added without overriding the brand's own; per-IP throttle of 240 requests a minute (in-memory, best effort); unknown or malformed codes 404 on the on-brand not-found page.
+**Why:** A reader never waits on our database, a Receipt only counts people, and we hold as little personal data as possible.
+**Rejected:** Insert-then-redirect; counting every hit; storing IPs; a third-party link shortener.
+**Status:** Active. 11 unit tests plus a live `curl` audit (3 people, a repeat visitor, LinkedInBot, Googlebot, HEAD, prefetch, two bad codes: totals moved by exactly the expected amounts).
+
+### D-078 · 2026-09-26T12:30Z · Phase 6
+**Decision:** **The booking drawer is the one place a brand acts on a booking**: review a draft (Approve / Request changes with a required note of at least 5 characters), Cancel offer, Release payout, view the tracked link and results, and revoke or restore the public Receipt. It shows the state the server sends, so every action updates it in place; irreversible actions (release, cancel) ask for confirmation first.
+**Why:** One consistent, accessible surface (a right-hand sheet, full width on phones) instead of scattering buttons across a table; no action can be double-fired from stale UI.
+**Rejected:** Inline row buttons; a separate booking page.
+**Status:** Active.
+
+### D-079 · 2026-09-26T12:30Z · Phase 6
+**Decision:** **Run-of-show** draws each booking as a block from its offer to its publish-by date (at least two days wide), with a "Today" marker; live and paid blocks carry unique clicks and a gap-free daily sparkline; below 768 px it becomes an agenda list with the same facts.
+**Why:** The brief's "campaign as a calendar" — it shows at a glance what is late, what is live and what is finished.
+**Rejected:** A generic Gantt library; a plain table only.
+**Status:** Active.
+
+### D-080 · 2026-09-26T12:30Z · Phase 6
+**Decision:** **Receipts** (`/receipt/[code]`) are public but unlisted (`noindex`), say exactly what is verified (clicks, counted by Byline) and what is not, and label the impressions source ("self-reported" vs "sandbox, simulated"). The brand can revoke or restore the link (`set_receipt_public`). The creator's public kit lists their paid Receipts as proof.
+**Why:** Trust comes from being explicit about provenance; revocability protects brands (D-038).
+**Rejected:** Login-gated receipts; hiding the impressions caveat.
+**Status:** Active. Refines D-038.
+
+### D-081 · 2026-09-26T12:30Z · Phase 6
+**Decision:** Polling cadence: the campaign page refreshes every 6 s while a sandbox creator has something pending or a post is live; the deal page every 8 s while live; both role layouts add a baseline 20 s refresh; all of it only while the tab is visible.
+**Why:** The Wire ticker, bell and counters stay alive everywhere without hammering the database or background tabs.
+**Rejected:** Always-on polling; a single global interval.
+**Status:** Active. Refines D-067.
+
+### D-082 · 2026-09-26T12:30Z · Phase 6
+**Decision:** **Cost per click** is spend on live and paid posts divided by their unique clicks, unsmoothed: a post that has just gone live with no clicks yet raises it until clicks arrive.
+**Why:** It is what the money actually bought so far; smoothing it would hide a real signal from the brand.
+**Rejected:** Excluding posts with zero clicks; a rolling average.
+**Status:** Active. Observed in testing (€7.44 → €12.65 when a sandbox post went live).
+
+### D-083 · 2026-09-26T12:30Z · Phase 6
+**Decision:** Front-end rules learned the hard way in Phase 6: (a) server components cannot pass functions to client components (`Metric` takes a `kind` string, not a formatter); (b) `sr-only` text inside a scroll region escapes its clip unless the region is `relative` (it widened the whole page on phones; `Table` now guards this); (c) read browser-only values with `useSyncExternalStore`, not an animation frame that pauses in background tabs (`CopyField`).
+**Why:** Each cost a debugging round; each is now enforced by the shared component that hit it.
+**Rejected:** Fixing them ad hoc per page.
+**Status:** Active.
+
+### D-084 · 2026-09-26T12:30Z · Phase 6
+**Decision:** **The golden loop was proven with two real users and no sandbox shortcuts**: the demo creator accepted an offer, autosaved and submitted a draft on a phone-sized screen; the brand approved it; the creator published (a malformed URL was rejected inline first) and received a tracked link; five reader visits (one repeat, plus a crawler) produced "+5 clicks · Maya Okafor · Launch Q4" on the Wire; the brand released the payout. Afterwards: every ledger transaction nets to zero, wallet and balance caches equal the ledger, escrow equals price for every in-flight booking, the creator's balance rose by exactly the price, her public kit lists the new Receipt, and the Receipt page shows "Paid to creator" with impressions "not reported".
+**Why:** The whole product claim is this loop; it deserves an end-to-end proof rather than piecemeal checks.
+**Rejected:** Trusting per-slice tests only.
+**Status:** Active. To become a Playwright test in Phase 8.
