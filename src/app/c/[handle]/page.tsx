@@ -25,7 +25,7 @@ function Bars({ title, shares }: { title: string; shares: Record<string, number>
   if (!rows.length) return null;
   return (
     <div>
-      <h3 className="font-mono text-caption font-normal text-muted">{title}</h3>
+      <h2 className="font-mono text-caption font-normal text-muted">{title}</h2>
       <ul className="mt-2 grid gap-2">
         {rows.map((r) => (
           <li key={r.tag} className="grid grid-cols-[minmax(0,9rem)_1fr_2.5rem] items-center gap-3 text-small">

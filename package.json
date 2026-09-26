@@ -14,7 +14,9 @@
     "db:migrate": "node scripts/db.mts migrate",
     "db:seed": "node scripts/db.mts seed",
     "db:reset": "node scripts/db.mts reset",
-    "db:test": "node scripts/db.mts test"
+    "db:test": "node scripts/db.mts test",
+    "e2e": "playwright test",
+    "e2e:install": "playwright install chromium webkit"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

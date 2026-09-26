@@ -30,12 +30,14 @@ export async function seeded() {
 }
 
 /** Collects console errors and uncaught page errors; call `.assertNone()` at the end of a flow. */
-export function watchErrors(page: Page) {
+export function watchErrors(page: Page, ignore: RegExp[] = []) {
   const errors: string[] = [];
   page.on("console", (m) => {
-    if (m.type() === "error") errors.push(`console: ${m.text()}`);
+    if (m.type() === "error" && !ignore.some((re) => re.test(m.text()))) errors.push(`console: ${m.text()}`);
   });
-  page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
+  page.on("pageerror", (e) => {
+    if (!ignore.some((re) => re.test(e.message))) errors.push(`pageerror: ${e.message}`);
+  });
   return { errors, assertNone: () => expect(errors, `unexpected browser errors:\n${errors.join("\n")}`).toEqual([]) };
 }
 
@@ -44,7 +46,12 @@ export async function overflowPx(page: Page): Promise<number> {
 }
 
 export async function axeViolations(page: Page): Promise<string[]> {
-  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]).analyze();
+  const r = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
+    // target-size treats whatever a sticky bar happens to cover at the current scroll position as an undersized target;
+    // `smallTargets` below measures the controls themselves against the stricter 44 px standard
+    .disableRules(["target-size"])
+    .analyze();
   return r.violations.map((v) => `${v.id} x${v.nodes.length} :: ${v.nodes[0]?.target.join(" ").slice(0, 80)}`);
 }
 

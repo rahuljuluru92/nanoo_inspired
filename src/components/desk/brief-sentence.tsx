@@ -26,7 +26,7 @@ function Slot({ label, display, placeholder, children }: { label: string; displa
           type="button"
           aria-label={`${label}: ${display || placeholder}. Edit`}
           className={cn(
-            "inline-flex min-h-11 items-center px-1 align-baseline shadow-[inset_0_-0.4em_0_var(--highlight)] hover:shadow-[inset_0_-1.2em_0_var(--highlight)] md:min-h-9",
+            "inline-flex min-h-11 items-center px-1 align-baseline shadow-[inset_0_-0.4em_0_var(--highlight)] hover:shadow-[inset_0_-1.2em_0_var(--highlight)] pointer-fine:min-h-9",
             empty && "italic text-muted",
           )}
         >
@@ -62,7 +62,7 @@ function MultiPicker({ options, value, onChange, name }: { options: string[]; va
             aria-pressed={on}
             onClick={() => onChange(on ? value.filter((x) => x !== o) : [...value, o])}
             className={cn(
-              "min-h-11 rounded-sm border px-3 text-small transition-colors duration-[var(--dur-1)] md:min-h-9",
+              "min-h-11 rounded-sm border px-3 text-small transition-colors duration-[var(--dur-1)] pointer-fine:min-h-9",
               on ? "border-ink bg-highlight" : "border-line-strong hover:border-ink",
             )}
           >
@@ -116,7 +116,7 @@ export function BriefSentence({ value, onChange, options, as: Tag = "p" }: { val
                 set("budgetCents", c);
                 setBudgetText(String(c / 100));
               }}
-              className={cn("min-h-11 rounded-sm border px-3 font-mono text-small md:min-h-9", value.budgetCents === c ? "border-ink bg-highlight" : "border-line-strong hover:border-ink")}
+              className={cn("min-h-11 rounded-sm border px-3 font-mono text-small pointer-fine:min-h-9", value.budgetCents === c ? "border-ink bg-highlight" : "border-line-strong hover:border-ink")}
             >
               {formatEUR(c)}
             </button>

@@ -32,7 +32,10 @@ export async function startSession(accountId: string): Promise<void> {
   await asOwner((c) =>
     c.query("insert into sessions (id, account_id, expires_at) values ($1, $2, now() + make_interval(days => $3))", [sha256(token), accountId, DAYS]),
   );
-  (await cookies()).set(COOKIE, token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * DAYS });
+  // `Secure` only when the request really came over HTTPS (any host or proxy sets x-forwarded-proto). Tying it to NODE_ENV instead broke
+  // sign-in for anyone running the production build on http://localhost in Safari, which refuses Secure cookies there.
+  const secure = (await headers()).get("x-forwarded-proto")?.split(",")[0]?.trim() === "https";
+  (await cookies()).set(COOKIE, token, { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: 60 * 60 * 24 * DAYS });
 }
 
 export async function endSession(): Promise<void> {

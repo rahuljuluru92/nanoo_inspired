@@ -39,7 +39,7 @@ function totals(items: TrayItem[]) {
   return { total, low, mid, high };
 }
 
-function TrayPanel({ items, budgetCents, walletCents, onRemove, onCommit, onAddFunds, blockedReason, onFixBlocked, showHeading = true }: TrayProps & { showHeading?: boolean }) {
+function TrayPanel({ items, budgetCents, walletCents, onRemove, onCommit, onAddFunds, blockedReason, onFixBlocked, showHeading = true, pinAction = false }: TrayProps & { showHeading?: boolean; pinAction?: boolean }) {
   const { total, low, mid, high } = totals(items);
   const over = budgetCents > 0 && total > budgetCents;
   const short = total - walletCents;
@@ -126,20 +126,23 @@ function TrayPanel({ items, budgetCents, walletCents, onRemove, onCommit, onAddF
         </div>
       ) : null}
 
-      <HoldButton
-        disabled={items.length === 0 || short > 0 || Boolean(blockedReason)}
-        onCommit={onCommit}
-        summary={
-          <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
-            <dt className="text-muted">Creators</dt>
-            <dd className="font-mono">{items.length}</dd>
-            <dt className="text-muted">Into escrow</dt>
-            <dd className="font-mono">{formatEUR(total)}</dd>
-            <dt className="text-muted">Wallet after</dt>
-            <dd className="font-mono">{formatEUR(walletCents - total)}</dd>
-          </dl>
-        }
-      />
+      {/* In the phone sheet the primary action stays pinned to the bottom edge, so it is never below the fold. */}
+      <div className={cn(pinAction && "sticky bottom-0 -mx-5 -mb-5 border-t border-line bg-paper-2 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3")}>
+        <HoldButton
+          disabled={items.length === 0 || short > 0 || Boolean(blockedReason)}
+          onCommit={onCommit}
+          summary={
+            <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
+              <dt className="text-muted">Creators</dt>
+              <dd className="font-mono">{items.length}</dd>
+              <dt className="text-muted">Into escrow</dt>
+              <dd className="font-mono">{formatEUR(total)}</dd>
+              <dt className="text-muted">Wallet after</dt>
+              <dd className="font-mono">{formatEUR(walletCents - total)}</dd>
+            </dl>
+          }
+        />
+      </div>
     </div>
   );
 }
@@ -173,6 +176,7 @@ export function Tray(props: TrayProps) {
         <TrayPanel
           {...props}
           showHeading={false}
+          pinAction
           onFixBlocked={
             props.onFixBlocked
               ? () => {

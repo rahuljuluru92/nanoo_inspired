@@ -72,7 +72,7 @@ export function Sheet({
           className={cn(
             "fixed z-50 flex flex-col overflow-y-auto border-ink bg-paper-2 outline-none",
             side === "bottom" &&
-              "inset-x-0 bottom-0 max-h-[88dvh] border-t pb-[env(safe-area-inset-bottom)] data-[state=open]:animate-sheet-bottom",
+              "inset-x-0 bottom-0 max-h-[88dvh] border-t data-[state=open]:animate-sheet-bottom",
             side === "right" && "inset-y-0 right-0 w-[min(100vw,28rem)] border-l data-[state=open]:animate-sheet-right",
           )}
         >

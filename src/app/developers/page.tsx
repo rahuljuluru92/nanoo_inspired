@@ -25,7 +25,7 @@ function Code({ children, label }: { children: string; label: string }) {
 function Endpoint({ id, method, path, children }: { id: string; method: string; path: string; children: ReactNode }) {
   return (
     <section id={id} aria-labelledby={`${id}-h`} className="scroll-mt-4 border-t-2 border-ink py-10">
-      <h2 id={`${id}-h`} className="font-mono text-title">
+      <h2 id={`${id}-h`} className="font-mono text-title [overflow-wrap:anywhere]">
         <span className="text-muted">{method}</span> {path}
       </h2>
       <div className="mt-4 grid gap-5">{children}</div>
