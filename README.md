@@ -49,6 +49,10 @@ Seeded "sandbox" creators reply on their own (clearly labelled) so a lone review
 | Public API | `GET /api/lineup`, `GET /api/creators/{handle}` — CORS-open, cached, throttled, JSON errors; the landing page's live desk *is* this API, and `/developers` is generated from the same code |
 | Failure modes | Skeletons match the real layout; every error boundary retries; a database outage makes the tracked link answer a 503 with `Retry-After`, never a raw 500 |
 
+### What is seeded, and what is not
+
+Seeded on purpose, and labelled in the interface: the **39 sandbox creators** and their audience figures, the demo brands and their campaigns, the impressions and clicks on the demo Receipts (marked *simulated*), and the automatic replies of sandbox creators (a lone reviewer could not otherwise complete the loop). These are rows in the real database, not hardcoded responses: no screen or endpoint returns anything that was not read from Postgres, and no fixtures or mocks exist outside the `/styleguide` page. Everything else is created by whoever uses it: sign up as a creator at `/join` and you appear in every brand's lineup, on `/api/lineup` and on `/sitemap.xml` immediately; book yourself from a second account and the offer, the escrow, the tracked link, the clicks and the payout are all genuinely yours. The e2e suite does exactly that with two brand-new accounts.
+
 ## Architecture
 
 ```mermaid

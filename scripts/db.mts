@@ -2,7 +2,7 @@
 //   node scripts/db.mts check | migrate | seed | reset-demo | reset | test
 //   check       connects, prints what it finds, and says whether this database can host Byline (run it first against a hosted URL)
 //   reset-demo  puts the three demo brands, Maya's account and their campaigns back to the starting state (safe on a live database)
-//   cleanup-e2e removes every account the end-to-end tests created (@example.test) and restores the demo world; run after a live e2e run
+//   cleanup-e2e [email]  removes every account the end-to-end tests created (@example.test), plus one exact email if given, and restores the demo world
 //   reset       drops everything and rebuilds; refuses non-local databases without --force
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -109,28 +109,33 @@ async function runTests(): Promise<void> {
   console.log("all database tests passed");
 }
 
-/** Removes what the end-to-end suite created (accounts on example.test, their campaigns, bookings, ledger legs), then restores the demo data. */
-async function cleanupE2e(c: pg.Client): Promise<void> {
+/**
+ * Removes accounts the end-to-end suite created (anything @example.test) plus, optionally, one exact email address (say, your own test
+ * account from a walkthrough), with their campaigns, bookings and ledger legs; then restores the demo data. Demo and seeded accounts are never touched.
+ */
+async function cleanupE2e(c: pg.Client, email = ""): Promise<void> {
+  const who = email.trim().toLowerCase();
+  if (who && /^(demo\.|ops@)/.test(who)) throw new Error("refusing to remove a demo or seeded account");
   await c.query("begin");
   try {
-    await c.query(`
-      create temp table e2e_brand on commit drop as select id from brands where owner_id in (select id from accounts where email like '%@example.test');
-      create temp table e2e_creator on commit drop as select id from creators where account_id in (select id from accounts where email like '%@example.test');
-      create temp table e2e_booking on commit drop as
+    const mine = "email like '%@example.test' or email = $1";
+    await c.query(`create temp table e2e_brand on commit drop as select id from brands where owner_id in (select id from accounts where ${mine})`, [who]);
+    await c.query(`create temp table e2e_creator on commit drop as select id from creators where account_id in (select id from accounts where ${mine})`, [who]);
+    await c.query(`create temp table e2e_booking on commit drop as
         select b.id from bookings b join campaigns c on c.id = b.campaign_id
-         where c.brand_id in (select id from e2e_brand) or b.creator_id in (select id from e2e_creator);
-      delete from ledger_entries where txn_id in (
+         where c.brand_id in (select id from e2e_brand) or b.creator_id in (select id from e2e_creator)`);
+    await c.query(`delete from ledger_entries where txn_id in (
         select txn_id from ledger_entries
-         where brand_id in (select id from e2e_brand) or creator_id in (select id from e2e_creator) or booking_id in (select id from e2e_booking));
-      delete from campaigns where brand_id in (select id from e2e_brand);
-      delete from bookings where id in (select id from e2e_booking);
-      delete from creators where id in (select id from e2e_creator);
-      delete from brands where id in (select id from e2e_brand);
-      delete from accounts where email like '%@example.test';
-      update creators c set balance_cents = coalesce((select sum(amount_cents) from ledger_entries l where l.creator_id = c.id and l.account = 'creator_balance'), 0);
-    `);
+         where brand_id in (select id from e2e_brand) or creator_id in (select id from e2e_creator) or booking_id in (select id from e2e_booking))`);
+    await c.query("delete from campaigns where brand_id in (select id from e2e_brand)");
+    await c.query("delete from bookings where id in (select id from e2e_booking)");
+    await c.query("delete from creators where id in (select id from e2e_creator)");
+    await c.query("delete from brands where id in (select id from e2e_brand)");
+    const gone = await c.query(`delete from accounts where ${mine}`, [who]);
+    await c.query("update creators c set balance_cents = coalesce((select sum(amount_cents) from ledger_entries l where l.creator_id = c.id and l.account = 'creator_balance'), 0)");
     await c.query("select app.seed_demo_state()");
     await c.query("commit");
+    console.log(`removed ${gone.rowCount ?? 0} account(s)${who ? ` (including ${who})` : ""}`);
   } catch (e) {
     await c.query("rollback").catch(() => {});
     throw e;
@@ -166,8 +171,8 @@ if (cmd === "check") {
   console.log(ok ? "this database is ready" : "this database is NOT ready: fix the FAIL lines above");
   process.exit(ok ? 0 : 1);
 } else if (cmd === "cleanup-e2e") {
-  await withClient(url, cleanupE2e);
-  console.log("end-to-end data removed, demo world restored");
+  await withClient(url, (c) => cleanupE2e(c, process.argv[3]));
+  console.log("demo world restored");
 } else if (cmd === "reset-demo") {
   await withClient(url, (c) => c.query("select app.seed_demo_state()"));
   console.log("demo world restored");
