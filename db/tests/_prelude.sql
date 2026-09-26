@@ -22,7 +22,6 @@ create function app_test.as_anon() returns void language plpgsql as $$
 begin perform set_config('app.user_id', '', true); execute 'reset role'; execute 'set local role byline_anon'; end $$;
 create function app_test.as_owner() returns void language plpgsql as $$
 begin execute 'reset role'; perform set_config('app.user_id', '', true); end $$;
-grant execute on all functions in schema app_test to byline_anon, byline_user;
 
 -- fixtures (called as owner) -------------------------------------------------
 create function app_test.mk_brand(p_email text, p_company text) returns uuid language sql as $$
@@ -41,3 +40,6 @@ end $$;
 create function app_test.cid(p_handle text) returns uuid language sql security definer set search_path = public, pg_temp as $$ select id from creators where handle = p_handle $$;
 create function app_test.bid(p_account uuid) returns uuid language sql security definer set search_path = public, pg_temp as $$ select id from brands where owner_id = p_account $$;
 create function app_test.status(p_booking uuid) returns booking_status language sql security definer set search_path = public, pg_temp as $$ select status from bookings where id = p_booking $$;
+
+-- (last, so it covers every helper above; functions are no longer executable by default)
+grant execute on all functions in schema app_test to byline_anon, byline_user;

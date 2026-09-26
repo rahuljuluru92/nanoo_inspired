@@ -149,8 +149,9 @@ create or replace view public_receipts as
 grant select on public_receipts to byline_anon, byline_user;
 
 -- ---------- functions: nothing is callable by default ----------
-alter default privileges in schema public revoke execute on functions from public;
-alter default privileges in schema app    revoke execute on functions from public;
+-- NOTE: `ALTER DEFAULT PRIVILEGES ... IN SCHEMA` can only ADD privileges to the global defaults, so it cannot strip PUBLIC's implicit
+-- EXECUTE from future functions (found by test 03 in Phase 5). The global form below can.
+alter default privileges revoke execute on functions from public;
 revoke execute on all functions in schema public from public;
 revoke execute on all functions in schema app    from public;
 

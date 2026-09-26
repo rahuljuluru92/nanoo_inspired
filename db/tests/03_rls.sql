@@ -62,6 +62,15 @@ begin
   perform app_test.expect($q$select link_lookup('abcd2345')$q$, 'permission denied');
   perform app_test.expect('select reset_demo()', 'forbidden');    -- callable, but only demo accounts pass
 
+  -- regression guard: NO function in public/app may be executable by PUBLIC (an ACL of NULL means the default: PUBLIC can execute)
+  perform app_test.as_owner();
+  assert not exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname in ('public', 'app') and p.prokind = 'f'
+       and (p.proacl is null or exists (select 1 from aclexplode(p.proacl) a where a.grantee = 0 and a.privilege_type = 'EXECUTE'))
+  ), 'a function is executable by PUBLIC: ' || coalesce((select string_agg(n.nspname || '.' || p.proname, ', ') from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname in ('public', 'app') and p.prokind = 'f' and (p.proacl is null or exists (select 1 from aclexplode(p.proacl) a where a.grantee = 0 and a.privilege_type = 'EXECUTE'))), '');
+
   -- signed out: public catalogue only
   perform app_test.as_anon();
   assert (select count(*) from public_creators) = 2, 'anon can read the public catalogue';
