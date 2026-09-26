@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { HUMAN_UA, auditLedger, sql, watchErrors } from "./helpers";
+import { HUMAN_UA, LIVE, auditLedger, sql, watchErrors } from "./helpers";
 
 /**
  * The whole product, with two brand-new people who have never met, through the real interface and the real database:
@@ -203,15 +203,17 @@ test("the brand approves, the creator goes live, readers click, the brand pays",
   await expect(creator.getByRole("heading", { name: "You’re live" })).toBeVisible();
   await expect(creator.getByLabel("Your tracked link")).toHaveValue(new RegExp(`/go/${trackingCode}$`));
 
-  // three readers: two different people, and the first one clicks twice
+  // three readers: two different people, and the first one clicks twice (live: one person, three clicks, since the platform sets the IP)
   const go = (ua: string, ip: string) => request.get(`/go/${trackingCode}`, { maxRedirects: 0, headers: { "user-agent": ua, "x-forwarded-for": ip } });
   expect((await go(HUMAN_UA, "203.0.113.10")).status()).toBe(302);
   await go(HUMAN_UA, "203.0.113.10");
   await go(HUMAN_UA, "203.0.113.11");
   await go("Twitterbot/1.0", "203.0.113.12");
-  await expect
-    .poll(async () => (await sql<{ t: string; u: string }>("select clicks_total as t, clicks_unique as u from booking_metrics_all where booking_id = $1", [bookingId]))[0])
-    .toMatchObject({ t: "3", u: "2" });
+  const clicks = async () => (await sql<{ t: string; u: string }>("select clicks_total as t, clicks_unique as u from booking_metrics_all where booking_id = $1", [bookingId]))[0];
+  await expect.poll(async () => (await clicks())?.t).toBe("3"); // the crawler is not counted
+  // two visitors locally; on a live site the platform sets the IP, so all three clicks come from one visitor (or two, if we are behind a proxy)
+  expect(["1", "2"]).toContain((await clicks())!.u);
+  if (!LIVE) expect((await clicks())!.u).toBe("2");
 
   // the brand sees the clicks arrive and pays
   await brand.reload();

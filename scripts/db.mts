@@ -1,5 +1,9 @@
 // Database tooling. Portable: works against any Postgres 15+ given DATABASE_URL (default: the project-local cluster).
-//   node scripts/db.mts migrate | seed | reset | test
+//   node scripts/db.mts check | migrate | seed | reset-demo | reset | test
+//   check       connects, prints what it finds, and says whether this database can host Byline (run it first against a hosted URL)
+//   reset-demo  puts the three demo brands, Maya's account and their campaigns back to the starting state (safe on a live database)
+//   cleanup-e2e removes every account the end-to-end tests created (@example.test) and restores the demo world; run after a live e2e run
+//   reset       drops everything and rebuilds; refuses non-local databases without --force
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import pg from "pg";
@@ -9,11 +13,13 @@ import { hashPassword } from "../src/lib/password.ts";
 const root = resolve(import.meta.dirname, "..");
 const LOCAL = "postgres://postgres@127.0.0.1:54322/byline";
 const url = process.env.DATABASE_URL ?? LOCAL;
+const isLocal = (u: string) => /(localhost|127\.0\.0\.1)/.test(u);
 const sqlFiles = (dir: string) => readdirSync(join(root, dir)).filter((f) => f.endsWith(".sql")).sort();
 const read = (dir: string, f: string) => readFileSync(join(root, dir, f), "utf8");
 
 async function withClient<T>(connectionString: string, fn: (c: pg.Client) => Promise<T>): Promise<T> {
-  const c = new pg.Client({ connectionString });
+  // hosted providers require TLS and present certificates a plain client cannot verify without extra setup; same rule as src/lib/db.ts
+  const c = new pg.Client({ connectionString, ssl: isLocal(connectionString) ? undefined : { rejectUnauthorized: false } });
   await c.connect();
   try {
     return await fn(c);
@@ -61,7 +67,7 @@ async function seed(c: pg.Client): Promise<void> {
 }
 
 async function reset(): Promise<void> {
-  if (!/(localhost|127\.0\.0\.1)/.test(url) && !process.argv.includes("--force")) throw new Error("refusing to reset a non-local database without --force");
+  if (!isLocal(url) && !process.argv.includes("--force")) throw new Error("refusing to reset a non-local database without --force (to only restore the demo data, use: reset-demo)");
   await withClient(url, async (c) => {
     await c.query("drop schema if exists public cascade; drop schema if exists app cascade; create schema public;");
     await c.query("grant usage on schema public to public");
@@ -103,8 +109,69 @@ async function runTests(): Promise<void> {
   console.log("all database tests passed");
 }
 
+/** Removes what the end-to-end suite created (accounts on example.test, their campaigns, bookings, ledger legs), then restores the demo data. */
+async function cleanupE2e(c: pg.Client): Promise<void> {
+  await c.query("begin");
+  try {
+    await c.query(`
+      create temp table e2e_brand on commit drop as select id from brands where owner_id in (select id from accounts where email like '%@example.test');
+      create temp table e2e_creator on commit drop as select id from creators where account_id in (select id from accounts where email like '%@example.test');
+      create temp table e2e_booking on commit drop as
+        select b.id from bookings b join campaigns c on c.id = b.campaign_id
+         where c.brand_id in (select id from e2e_brand) or b.creator_id in (select id from e2e_creator);
+      delete from ledger_entries where txn_id in (
+        select txn_id from ledger_entries
+         where brand_id in (select id from e2e_brand) or creator_id in (select id from e2e_creator) or booking_id in (select id from e2e_booking));
+      delete from campaigns where brand_id in (select id from e2e_brand);
+      delete from bookings where id in (select id from e2e_booking);
+      delete from creators where id in (select id from e2e_creator);
+      delete from brands where id in (select id from e2e_brand);
+      delete from accounts where email like '%@example.test';
+      update creators c set balance_cents = coalesce((select sum(amount_cents) from ledger_entries l where l.creator_id = c.id and l.account = 'creator_balance'), 0);
+    `);
+    await c.query("select app.seed_demo_state()");
+    await c.query("commit");
+  } catch (e) {
+    await c.query("rollback").catch(() => {});
+    throw e;
+  }
+}
+
+/** Can this database host Byline? Prints each fact so a failure explains itself. */
+async function check(c: pg.Client): Promise<boolean> {
+  let ok = true;
+  const say = (good: boolean, msg: string) => {
+    if (!good) ok = false;
+    console.log(`${good ? "  ok  " : "  FAIL"} ${msg}`);
+  };
+  const host = new URL(url).host;
+  console.log(`checking ${host}`);
+  const v = (await c.query<{ v: number }>("select current_setting('server_version_num')::int as v")).rows[0]!.v;
+  say(v >= 150000, `Postgres ${Math.floor(v / 10000)}.${v % 10000 % 100} (need 15 or newer)`);
+  const me = (await c.query<{ rolcreaterole: boolean; rolsuper: boolean; user: string }>("select rolcreaterole, rolsuper, current_user as user from pg_roles where rolname = current_user")).rows[0]!;
+  say(me.rolcreaterole || me.rolsuper, `role "${me.user}" can create roles (needed once, for the app's two least-privilege roles)`);
+  const applied = await c.query("select 1 from information_schema.tables where table_name = 'schema_migrations'").then((r) => (r.rowCount ?? 0) > 0);
+  console.log(`  info  migrations table: ${applied ? "present" : "not yet created (run migrate)"}`);
+  if (applied) {
+    const n = (await c.query<{ n: string }>("select count(*) as n from schema_migrations")).rows[0]!.n;
+    console.log(`  info  ${n} of ${sqlFiles("db/migrations").length} migrations applied`);
+  }
+  if (/-pooler\.|:6543|pgbouncer/i.test(url)) console.log("  note  this looks like a pooled URL: use it for the app, but run migrate/seed with the direct (non-pooled) URL");
+  return ok;
+}
+
 const cmd = process.argv[2];
-if (cmd === "migrate") console.log("applied:", (await withClient(url, migrate)).join(", ") || "nothing (up to date)");
+if (cmd === "check") {
+  const ok = await withClient(url, check);
+  console.log(ok ? "this database is ready" : "this database is NOT ready: fix the FAIL lines above");
+  process.exit(ok ? 0 : 1);
+} else if (cmd === "cleanup-e2e") {
+  await withClient(url, cleanupE2e);
+  console.log("end-to-end data removed, demo world restored");
+} else if (cmd === "reset-demo") {
+  await withClient(url, (c) => c.query("select app.seed_demo_state()"));
+  console.log("demo world restored");
+} else if (cmd === "migrate") console.log("applied:", (await withClient(url, migrate)).join(", ") || "nothing (up to date)");
 else if (cmd === "seed") { await withClient(url, seed); console.log("seeded"); }
 else if (cmd === "reset") {
   await reset();
@@ -112,4 +179,4 @@ else if (cmd === "reset") {
   await withClient(url, seed);
   console.log("seeded");
 } else if (cmd === "test") await runTests();
-else { console.log("usage: node scripts/db.mts migrate|seed|reset|test"); process.exit(2); }
+else { console.log("usage: node scripts/db.mts check|migrate|seed|reset-demo|cleanup-e2e|reset|test"); process.exit(2); }

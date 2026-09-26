@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 import { asAnon } from "@/lib/db";
+import { siteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const base = siteUrl();
   let handles: string[] = [];
   try {
     handles = (await asAnon((c) => c.query<{ handle: string }>("select handle from public_creators order by handle"))).rows.map((r) => r.handle);

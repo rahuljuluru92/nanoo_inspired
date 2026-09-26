@@ -2,6 +2,8 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
 import pg from "pg";
 
+/** True when the suite is pointed at a deployed site (E2E_BASE_URL). Tests that spoof a client IP cannot run there: the platform sets it. */
+export const LIVE = Boolean(process.env.E2E_BASE_URL);
 export const DB_URL = process.env.DATABASE_URL ?? "postgres://postgres@127.0.0.1:54322/byline";
 export const STATE = { brand: ".local/e2e/brand.json", creator: ".local/e2e/creator.json" };
 export const HUMAN_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";

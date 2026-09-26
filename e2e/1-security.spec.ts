@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { HUMAN_UA, STATE, seeded, sql } from "./helpers";
+import { HUMAN_UA, LIVE, STATE, seeded, sql } from "./helpers";
 
 const APP_PATHS = ["/desk", "/campaigns", "/wallet", "/wire", "/offers", "/deals", "/earnings", "/kit", "/onboarding"];
 
@@ -44,6 +44,7 @@ test.describe("signed out", () => {
   });
 
   test("the API throttles a noisy client and leaves others alone", async ({ request }) => {
+    test.skip(LIVE, "needs a spoofable client IP; on a live site the platform sets it, and the limit is per server instance");
     const codes: number[] = [];
     for (let i = 0; i < 64; i++) codes.push((await request.get("/api/lineup?limit=1", { headers: { "x-forwarded-for": "198.51.100.77" } })).status());
     expect(codes.filter((c) => c === 200)).toHaveLength(60);
@@ -64,12 +65,14 @@ test.describe("signed out", () => {
     for (const evil of ["https://evil.example", "//evil.example", "/\\evil.example"]) {
       await page.goto(`/login?next=${encodeURIComponent(evil)}`);
       await page.getByRole("button", { name: "Enter as the demo brand" }).click();
-      await expect(page).toHaveURL(/localhost:3200\/desk/);
+      await expect(page).toHaveURL(/\/desk$/);
+      expect(new URL(page.url()).origin).toBe(new URL(test.info().project.use.baseURL!).origin); // never off-site
       await page.context().clearCookies();
     }
   });
 
   test("password sign-in is throttled and never reveals whether an email exists", async ({ page }) => {
+    test.skip(LIVE, "needs a spoofable client IP; on a live site the platform sets it, and the limit is per server instance");
     // a private client address per run, so re-running against a warm server starts from zero
     await page.setExtraHTTPHeaders({ "x-forwarded-for": `192.0.2.${1 + Math.floor(Math.random() * 250)}` });
     const seen: string[] = [];
@@ -159,6 +162,7 @@ test.describe("roles", () => {
 });
 
 test("a tracked link counts a person once per day and ignores crawlers", async ({ request }) => {
+  test.skip(LIVE, "needs a spoofable client IP to tell visitors apart");
   const { code, id } = (await sql<{ code: string; id: string }>("select tracking_code as code, id from bookings where status = 'live' limit 1"))[0]!;
   const before = (await sql<{ t: string; u: string }>("select clicks_total as t, clicks_unique as u from booking_metrics_all where booking_id = $1", [id]))[0]!;
   const hit = (ua: string, ip: string) => request.get(`/go/${code}`, { maxRedirects: 0, headers: { "user-agent": ua, "x-forwarded-for": ip } });

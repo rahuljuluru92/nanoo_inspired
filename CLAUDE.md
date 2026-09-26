@@ -36,7 +36,7 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 
 ---
 
-## Concept## Concept## Concept## Concept## Concept## Concept## Concept## Concept — four nouns (use these words in UI **and** code)
+## Concept — four nouns (use these words in UI **and** code)
 > **Brief → Lineup → Wire → Receipt.** Brands write a **Brief**, assemble a **Lineup**, watch the **Wire**, keep a **Receipt**.
 > Creators get **Offers**, file a **Draft**, go **Live**, get **Paid**, and build a media kit of verified Receipts.
 
