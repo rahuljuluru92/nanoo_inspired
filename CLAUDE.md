@@ -12,33 +12,31 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 ---
 
 ## STATUS  _(update at the end of every phase/slice)_
-**Last updated:** 2026-09-26T05:53Z · **Current phase: 0 — Capture + accounts (in progress)** · Clock started 2026-09-26T05:09Z
+**Last updated:** 2026-09-26T06:06Z · **Current phase: 1 — Recon + spec + design brief (agent side done; waiting on the user's walkthrough)** · Clock started 2026-09-26T05:09Z
 
 **Done**
-- Capture hook built and verified live in the desktop session: prompt + final response land in `.agent-logs/` with the real model id (`.claude/hooks/capture.py`, `.claude/settings.json`).
-- `git init`, `.gitignore` (does NOT ignore `.agent-logs/`), backfill of pre-hook turns, `CAPTURE-TEST.md` draft.
-- Recon of Naano's **public** pages (desktop + mobile), `llms.txt`, register page. Plan v2 written; interactive concept mockup shown.
-- `CLAUDE.md` + `DECISIONS.md` created (D-001 … D-024).
-- **Canary 1 passed** (fresh desktop session `7cca7f4e`: prompt + response, no capture errors) and pasted raw into `CAPTURE-TEST.md`. Found `model: sonnet` on the first PROMPT of a fresh session → added a `SessionStart` hook to record the model (D-025).
-
-- **Canary 2 ran** (session `7d8eec6d`): prompt captured, no capture errors, but it **disproved the D-025 fix**: the desktop `SessionStart` payload has no `model`, so the PROMPT logged `sonnet` again. Fixed in D-026 (read the model from the transcript's `model` attachment row); verified by replay only. `CAPTURE-TEST.md` updated honestly (canary 2 = model check failed, fixed afterwards).
+- **Phase 0:** capture hook (SessionStart / UserPromptSubmit / Stop) live; model id read from the transcript (D-026, replay-verified); first commit `55744cb` pushed to https://github.com/rahuljuluru92/nanoo_inspired (public); `CLAUDE.md`, `DECISIONS.md`, `CAPTURE-TEST.md`, `PLAN.md` committed.
+- **Phase 1 (agent side):** [SPEC.md](SPEC.md) (roles, golden path, screens, state machine, data model, RPCs, fit/projection/tracking/Wire/Receipt behaviour, sandbox creators, seed plan, acceptance criteria, open questions for the walkthrough) · [design/BRIEF.md](design/BRIEF.md) (principles, **anti-list**, measured-contrast tokens, type, shell, components, responsive matrix, motion, voice, a11y) · [recon/README.md](recon/README.md) (public-page findings + walkthrough kit). Decisions D-027 … D-041 logged.
+- Public-page recon of the reference product (desktop + mobile, `llms.txt`, `pricing.md`, register page). Help Center is only a contact page.
 
 **In progress**
-- Phase 0 close-out: **canary 3** in a third fresh desktop session to confirm the D-026 fix live (first PROMPT must show `claude-sonnet-5`) → then first commit.
+- **User:** logged-in Naano walkthrough → `recon/brand|creator/` screenshots (cropped, no personal data/secrets) + `recon/NOTES.md` answering SPEC §12.
+- Phase 0 tail: **canary 3** (fresh desktop session; first PROMPT must show `claude-sonnet-5`) → finalize `CAPTURE-TEST.md`.
 
 **Next**
-- Phase 1: user's logged-in Naano walkthrough → `/recon`; write `SPEC.md`; design brief; scaffold repo. Then Phase 2 (design system + shell).
+- Fold `recon/NOTES.md` into SPEC (log any changes). **Phase 2 can start now** — it depends on design/BRIEF.md, not on the walkthrough: scaffold Next.js + Tailwind, `tokens.css`, fonts, `Halftone`, components, masthead/ticker/tab-bar shell, `/styleguide` (verify at 4 widths + squint test). Walkthrough only affects Phase 3+ (schema/flows).
 
 **Open blockers / awaiting the user**
-1. **One more canary session** (`CAPTURE TEST 3 — 8x assignment, Rahul`, in a brand-new desktop session) — confirms the model fix live and finishes `CAPTURE-TEST.md`. **Nothing committed yet.**
-2. GitHub: `gh` not installed and the GitHub MCP returned 401 → need a fixed connection or the user to create the public repo. Real GitHub handle also needed (log header uses `rahuljuluru786` as a fallback, D-008).
-3. Accounts: Supabase project + Vercel (linked to GitHub). Keys go in `.env.local` only — **never in chat** (prompts are logged publicly).
-4. Logged-in Naano walkthrough with screenshots (flows/data only, not visuals). Agent cannot sign up.
-5. User's reaction to the design direction/mockup; confirm name "Byline"; say whether to enable AI brief parsing (needs an Anthropic key).
+1. Naano logged-in walkthrough (in progress; the agent cannot sign up).
+2. Supabase project + Vercel account (after the walkthrough). Keys in `.env.local` only — **never in chat** (prompts are logged publicly).
+3. Canary 3 (above).
+4. Author handle: repo owner is `rahuljuluru92`, but log headers/commits use `rahuljuluru786` (D-008) — say if the hook should switch to `rahuljuluru92` for future logs.
+5. Confirm design direction (mockup) and the name "Byline"; say whether to enable AI brief parsing (needs an Anthropic key). Defaults in force: Byline, deterministic parsing, light theme.
+6. Push policy: push at the end of every phase? (Currently commits are local until asked.) Two sessions share the working tree — commit from one at a time (D-027).
 
 ---
 
-## Concept — four nouns (use these words in UI **and** code)
+## Concept## Concept — four nouns (use these words in UI **and** code)
 > **Brief → Lineup → Wire → Receipt.** Brands write a **Brief**, assemble a **Lineup**, watch the **Wire**, keep a **Receipt**.
 > Creators get **Offers**, file a **Draft**, go **Live**, get **Paid**, and build a media kit of verified Receipts.
 
@@ -69,9 +67,9 @@ blue split-screen sign-up, black-pill-on-Inter styling, photo-card grid, floatin
 
 ## Design system (short form; full in PLAN.md §5)
 Paper `#F5F1EA` · ink `#15130F` · muted `#6B655B` · hairline `#E3DCCF` · vermilion `#FF4B1F` (actions/live) · highlighter `#FFD84D` (selection/emphasis only) ·
-money green `#0E4B3A`. Display serif (Instrument Serif/Fraunces) · grotesque (Geist/Inter Tight) · tabular mono for money/metrics/datelines.
+money green `#0E4B3A`. **Instrument Serif** (display/numerals) · **Schibsted Grotesk** (UI) · **JetBrains Mono** tabular (money/metrics/datelines) (D-034). **Vermilion is fills-only with ink text on it; small vermilion text uses `#C2300A`; control borders `#8A8377`** (D-035, contrast measured).
 Hairline rules, paper grain, mono datelines. **No gradients, glass, heavy shadows, blue.** Motion 150–200 ms, off under `prefers-reduced-motion`.
-Responsive: creator side mobile-first; brand side desktop-first with phone parity (tray→bottom sheet, rail→bottom tabs, rows→stacked cards via container queries).
+Shell = top **masthead + Wire ticker** (phone: compact masthead + bottom tab bar) — no left rail (D-033). Responsive: creator side mobile-first; brand side desktop-first with phone parity (tray→bottom sheet, rows→stacked cards via container queries).
 "Not clumsy" bar: skeletons not spinners, empty states everywhere, inline validation, no layout shift, focus rings, 44 px targets, AA contrast, 320–1920 tested.
 
 ## Scope
@@ -88,19 +86,21 @@ approve→payout · tracked links `/go/[code]` + real click events · Wire · Re
 - Deterministic brief parsing first; AI parsing is Tier 3 (D-015). Light theme only (D-023).
 - **Pre-agreed fallbacks if time/flakiness bites:** Wire realtime → polling → simple list · Run-of-show calendar → agenda list · dashboard charts → numbers only.
 - Cut order if tight: AI parsing → media-kit polish → run-of-show → API docs page → realtime pulse. **Never cut** Phases 4–6, the responsive pass, the landing live desk.
+- Pricing is a landing-page section, no plans (D-036) · `shortlist_requests` dropped (D-037) · no left rail (D-033) · no withdrawals, no dispute flow · creator stats self-reported/seeded and labelled (D-040) · sandbox creators reply automatically, clearly labelled (D-028).
 - _Add new simplifications here as they happen, and log them in DECISIONS.md._
+- **Where PLAN.md is outdated** (left rail, Geist/Inter Tight, free-shortlist form, pricing page): CLAUDE.md, SPEC.md and design/BRIEF.md win.
 
 ## Phases
 | # | Phase | Box | Status |
 |---|---|---|---|
-| 0 | Capture + accounts | 30–45 min | **in progress** (hook works; canary 1 passed; canary 2 found + fixed the model-id defect; canary 3 + accounts + first commit pending) |
-| 1 | Recon + spec + design brief | 60–75 min | not started |
+| 0 | Capture + accounts | 30–45 min | **done** except canary 3 (live confirmation of the model-id fix); repo + first commit pushed; Supabase/Vercel pending |
+| 1 | Recon + spec + design brief | 60–75 min | **agent side done** (SPEC, design brief, recon kit); user's logged-in walkthrough + `recon/NOTES.md` pending |
 | 2 | Design system + shell (`/styleguide`) | 90 min | not started |
 | 3 | Data foundation (migrations, RLS, RPCs, seed, auth, demo logins, **deployed**) | 90 min | not started |
 | 4 | Slice A — Brief → Lineup → Tray → hold-to-commit escrow | 150 min | not started |
 | 5 | Slice B — Creator side (mobile-first) | 120 min | not started |
 | 6 | Slice C — approve → live → payout; `/go/[code]`; Wire; Receipt; Run-of-show | 150 min | not started |
-| 7 | Landing (live desk) + public media kit + pricing + API | 90 min | not started |
+| 7 | Landing (live desk, pricing section) + public media kit + API | 90 min | not started |
 | 8 | Harden + polish (responsive matrix, iOS Safari, a11y, e2e on live URL) | 90 min | not started |
 | 9 | Ship (README, walkthrough, intro, submission) | 60–90 min | not started |
 
@@ -115,7 +115,8 @@ Supabase (Postgres, Auth, RLS, Realtime, Storage) · Vercel · Playwright (e2e) 
 
 **Folder structure**
 ```
-CLAUDE.md  DECISIONS.md  PLAN.md  CAPTURE-TEST.md  README.md
+CLAUDE.md  DECISIONS.md  PLAN.md  SPEC.md  CAPTURE-TEST.md  README.md
+design/BRIEF.md            visual + interaction rules (tokens, anti-list, components)
 .claude/{settings.json, hooks/capture.py}     .agent-logs/   (never edit; never gitignore)
 recon/                     screenshots + notes from the logged-in Naano walkthrough (flows/data only)
 supabase/{migrations/, seed.sql, tests/}      SQL is the source of truth for the schema + RPCs
@@ -149,4 +150,4 @@ e2e/  .github/workflows/ci.yml
 
 ## Resuming cold
 Read this file → `tail` DECISIONS.md → `git log --oneline -10` → check `.agent-logs/capture-errors.log` exists/empty → continue from **Next** above.
-Reference: [PLAN.md](PLAN.md) (design system detail, data model, risks, submission checklist + walkthrough script) · [CAPTURE-TEST.md](CAPTURE-TEST.md).
+Reference: [SPEC.md](SPEC.md) (behaviour, data, RPCs, acceptance criteria) · [design/BRIEF.md](design/BRIEF.md) (visual rules) · [PLAN.md](PLAN.md) (risks, submission checklist + walkthrough script) · [CAPTURE-TEST.md](CAPTURE-TEST.md).

@@ -165,3 +165,93 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** Canary 2 (fresh desktop session `7d8eec6d`) showed the desktop `SessionStart` payload has no `model` field (keys: `cwd, hook_event_name, scratchpad_dir, session_id, source, transcript_path`), so D-025 could not work and the PROMPT logged the alias `sonnet` again. The real id (`claude-sonnet-5`) is already in the transcript's model attachment row.
 **Rejected:** Patching the logged PROMPT afterwards (edits history); parsing the alias from `~/.claude/settings.json` (it is an alias, not the real id); removing the `SessionStart` hook (costs nothing and covers other clients).
 **Status:** Active. Verified by replay only (first-prompt rows → `claude-sonnet-5`; full transcript → same; empty → `unknown`, exit 0). Live confirmation = canary 3. Canary-1 and canary-2 PROMPT entries stay as logged (`model: sonnet`).
+
+### D-027 · 2026-09-26T05:54Z · Phase 1
+**Decision:** Repo is public GitHub `rahuljuluru92/nanoo_inspired` (remote `origin`); first commit `55744cb` was made and pushed from a parallel session at the user's request.
+**Why:** Required deliverable; commits with logs interleaved show the real build order.
+**Rejected:** Private repo; waiting for canary 3 before the first push.
+**Status:** Active. Two sessions (`4d4e227d`, `7d8eec6d`) now write the same working tree: `.agent-logs/` files show as modified continuously, and only one session should commit at a time. Open: whether to push at every phase end (asked).
+
+### D-028 · 2026-09-26T06:00Z · Phase 1
+**Decision:** **Sandbox creators**: seeded creators have no login and reply automatically, driven lazily by an idempotent `sandbox_tick()` RPC (called on campaign/desk/wire load and every ~10 s while a campaign page is open). The UI labels them "Sandbox creator — replies automatically". The demo creator is not sandbox.
+**Why:** Without them the brand's golden path stalls (nobody accepts the offers); the reviewer must be able to complete the loop alone, and the labelling keeps it honest.
+**Rejected:** Cron/pg_cron (extra infra, fragile on free tier); leaving bookings pending; pre-seeding every booking as already accepted (no live feel).
+**Status:** Active (SPEC §7.6).
+
+### D-029 · 2026-09-26T06:00Z · Phase 1
+**Decision:** Two **shared demo accounts** (brand, creator) with credentials shown on `/login`, plus a `reset_demo()` RPC restoring seeded state.
+**Why:** One-click entry for reviewers who are not signed in; shared state is cheap and resettable.
+**Rejected:** Per-visitor anonymous sandboxes (isolation but much more seeding/RLS complexity); asking reviewers to sign up.
+**Status:** Active. Risk: concurrent reviewers mutate shared demo data — mitigated by reset.
+
+### D-030 · 2026-09-26T06:00Z · Phase 1
+**Decision:** **Fit score and projection are computed in TypeScript** (`lib/fit.ts`, `lib/projection.ts`) over creator rows, not in SQL. Weights: audience 0.40, vertical 0.25, geography 0.20, performance 0.15; every score carries "why" chips.
+**Why:** Pure functions are trivially unit-tested and quick to iterate; ~40–100 creators makes in-app scoring instant; the same code serves the landing API and the Desk.
+**Rejected:** A SQL scoring function (harder to test/iterate, hides logic from reviewers); ML/embedding matching (opaque, slower, out of scope).
+**Status:** Active.
+
+### D-031 · 2026-09-26T06:00Z · Phase 1
+**Decision:** **Ledger is the source of truth**: append-only `ledger_entries` grouped by `txn_id` (each nets to zero) over accounts `external, brand_wallet, escrow, creator_balance`; `brands.wallet_cents` / `creators.balance_cents` are caches updated in the same RPC transaction, with a SQL test that they equal the ledger sums.
+**Why:** Fast reads without recomputation, yet drift is detectable; double-entry makes the money logic reviewable.
+**Rejected:** Balance columns only (can silently drift); computing every balance from the ledger on read (slow, complex RLS).
+**Status:** Active. No withdrawals (Tier 3).
+
+### D-032 · 2026-09-26T06:00Z · Phase 1
+**Decision:** Payout is **released by the brand** (`release_payout`) after the post is live; no automatic time-based release for now.
+**Why:** Mirrors the reference product's "review then pay" while keeping a human check before money leaves escrow; simple to test and demo.
+**Rejected:** Auto-pay on `mark_live` (no verification); a 48 h auto-release timer (needs scheduling; add later if time allows).
+**Status:** Active. Reverse/extend if the walkthrough shows a different trigger.
+
+### D-033 · 2026-09-26T06:01Z · Phase 1
+**Decision:** App shell is a **top masthead with a Wire ticker strip** (phone: compact masthead + bottom tab bar), **not a left icon rail**. Wordmark = italic serif "Byline" with a 2 px vermilion rule.
+**Why:** The reference app uses a left icon rail; a newspaper-style masthead is more distinct and carries the editorial concept and the live Wire.
+**Rejected:** A slim left rail (planned in PLAN.md §5/§6 and D-020's responsive table).
+**Status:** Active. **Reverses** the "rail" part of D-020 / PLAN.md §5; the rest of D-020 stands.
+
+### D-034 · 2026-09-26T06:01Z · Phase 1
+**Decision:** Fonts: **Instrument Serif** (display/numerals), **Schibsted Grotesk** (UI), **JetBrains Mono** (data/money/datelines), self-hosted via `next/font`.
+**Why:** Schibsted Grotesk is news-origin and clearly not Inter-like; the trio supports newsprint × trading desk.
+**Rejected:** Inter / Inter Tight / Geist (too close to the reference's Inter-like look; the concept mockup used Inter Tight only as a stand-in).
+**Status:** Active. Supersedes the "Geist / Inter Tight" options listed in PLAN.md §5.
+
+### D-035 · 2026-09-26T06:01Z · Phase 1
+**Decision:** **Vermilion `#FF4B1F` is for fills only, with ink text on it** (5.6:1). Small vermilion text/links use `--vermilion-ink #C2300A` (5.0:1). Control borders use `--line-strong #8A8377` (3.3:1); `--line` is decoration only. Contrast was measured, not assumed.
+**Why:** Vermilion text on paper is 2.97:1 and white on vermilion is 3.34:1 — both fail AA; the concept mockup's white-on-vermilion hold button was wrong.
+**Rejected:** White text on vermilion; vermilion body text; lightening the accent (loses the punch).
+**Status:** Active (design/BRIEF.md §3).
+
+### D-036 · 2026-09-26T06:01Z · Phase 1
+**Decision:** **Pricing is a section of the landing page**, not a separate page and not tiered: "no platform fee during beta; you pay each creator's flat fee per post". The managed-service tier stays cut (D-022).
+**Why:** We have no real billing; a plans page would be theatre. Keeps the landing page focused on the live desk.
+**Rejected:** A full `/pricing` page with Self-Serve/Managed plans mirroring the reference.
+**Status:** Active.
+
+### D-037 · 2026-09-26T06:01Z · Phase 1
+**Decision:** **Drop the `shortlist_requests` table** and any free-shortlist form.
+**Why:** Superseded by the instant lineup (D-016); no user story needs it.
+**Rejected:** Keeping it "just in case".
+**Status:** Active. Refines D-022 (which had left it optional).
+
+### D-038 · 2026-09-26T06:02Z · Phase 1
+**Decision:** **Receipts are public but unlisted** (unguessable 8-char tracking code) and **revocable** per booking via `receipt_public`; creators' media kits list their paid Receipts.
+**Why:** Shareable proof is the point; revocability protects brands; no enumeration surface.
+**Rejected:** Login-gated receipts (kills the trust/shareability story); fully listed public receipts (privacy).
+**Status:** Active (SPEC §7.4).
+
+### D-039 · 2026-09-26T06:02Z · Phase 1
+**Decision:** **Click tracking**: `/go/[code]` answers 302 immediately, records the click in `after()`; bots/link-unfurlers are classified and never counted; `ip_hash = sha256(ip+ua+date+secret)` (only the hash is stored); unique = distinct hash per booking per day; country from `x-vercel-ip-country`.
+**Why:** Real, defensible click counts without slowing the redirect or storing raw IPs.
+**Rejected:** Insert-then-redirect (slower); counting all hits (inflated by previews); storing raw IPs (privacy).
+**Status:** Active (SPEC §7.3).
+
+### D-040 · 2026-09-26T06:02Z · Phase 1
+**Decision:** Creator stats (followers, audience mix, impressions) are **self-reported or seeded and labelled as such** everywhere; no LinkedIn API or scraping. Clicks are the only *verified* metric.
+**Why:** Honest about what the platform can vouch for; keeps scope inside a day; the Receipt states exactly what is verified.
+**Rejected:** Faking "verified" data; scraping LinkedIn (ToS, fragile).
+**Status:** Active.
+
+### D-041 · 2026-09-26T06:03Z · Phase 1
+**Decision:** The logged-in Naano walkthrough is used **for flows and data only**; screenshots go to `recon/`, must be cropped/blurred of personal data and secrets (the folder is committed publicly), and answers are recorded in `recon/NOTES.md` against SPEC §12.
+**Why:** Keeps recon useful without leaking into visuals/copy (Never-touch list) or exposing private data.
+**Rejected:** Copying their screens as a design reference; committing raw screenshots.
+**Status:** Active. Walkthrough in progress by the user.
