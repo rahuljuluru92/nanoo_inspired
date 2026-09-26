@@ -309,3 +309,69 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** Found by trial; recorded so no future session loses time.
 **Rejected:** Trying to fix the sandbox PATH.
 **Status:** Active.
+
+### D-051 · 2026-09-26T06:48Z · Phase 3
+**Decision:** **The backend is portable Postgres, not Supabase-specific.** The app connects with `DATABASE_URL` to any Postgres 15+; local development uses a project-local cluster on :54322 (`scripts/db-local.sh`). Supabase Auth, PostgREST, Realtime and Storage are not used; Supabase (or Neon) remains a valid place to *host* the database.
+**Why:** No Supabase project exists yet, Docker is not running and only ~11 GB of disk is free (the Supabase local stack needs several GB of images). A portable design builds and tests the real backend now, and switching to a hosted database is a connection-string change, so nothing is throwaway.
+**Rejected:** Waiting for a cloud project; Docker + `supabase start` (heavy, risky on this disk); a mocked data layer (the brief requires a real backend).
+**Status:** Active. **Reverses** the Supabase Auth/Realtime/Storage part of D-002 and the "Supabase" stack line in CLAUDE.md. The Phase 3 *deploy* exit test is pending a hosted Postgres from the user.
+
+### D-052 · 2026-09-26T06:48Z · Phase 3
+**Decision:** **Row-level security is enforced per request at the database session.** Each user request runs `SET LOCAL ROLE byline_user` and sets `app.user_id`; signed-out visitors run as `byline_anon`. Helpers (`app.uid()`, `app.can_see_booking()`…) are SECURITY DEFINER so policies never recurse; EXECUTE is revoked from PUBLIC on every function; column grants keep `password_hash` and `ip_hash` unreachable; user-facing views are definer views with explicit `app.uid()` filters.
+**Why:** RLS then protects even if application code has a bug; the same model works on any Postgres.
+**Rejected:** Supabase-style JWT claims through PostgREST (needs Supabase); application-layer checks only.
+**Status:** Active. Verified by SQL suite 03 and by mutation testing (D-059).
+
+### D-053 · 2026-09-26T06:48Z · Phase 3
+**Decision:** **Zero Postgres extensions.** UUIDs via built-in `gen_random_uuid()`, tracking codes via `uuid_send`, emails stored lowercase under a CHECK constraint (no citext), password hashing in Node (scrypt).
+**Why:** Extension schemas differ between hosts (Supabase puts pgcrypto in `extensions`); none means the SQL runs unchanged everywhere.
+**Rejected:** pgcrypto / citext.
+**Status:** Active.
+
+### D-054 · 2026-09-26T06:48Z · Phase 3
+**Decision:** **App-owned authentication.** scrypt password hashes; a `sessions` table that stores only `sha256(token)`; an HttpOnly, SameSite=Lax, Secure-in-production cookie for 30 days; same-site-only `next` redirects; constant-work verification with a dummy hash for unknown emails; best-effort in-memory sign-in throttling (8 attempts / 10 min per IP+email).
+**Why:** Follows from D-051; small, auditable and dependency-free.
+**Rejected:** Supabase Auth; NextAuth (extra dependency); stateless JWT sessions (cannot be revoked).
+**Status:** Active. Known limit: the throttle is per server instance.
+
+### D-055 · 2026-09-26T06:48Z · Phase 3
+**Decision:** **Live updates are polling, not Postgres realtime.** The Wire and campaign counters refresh by polling (Phase 6). This is the fallback pre-agreed in SPEC §7.5 and CLAUDE.md, now the default.
+**Why:** Realtime came with Supabase; polling is enough for the demo and works on serverless hosting.
+**Rejected:** LISTEN/NOTIFY + SSE (long-lived connections do not suit serverless).
+**Status:** Active. Revisit if a Supabase project is adopted.
+
+### D-056 · 2026-09-26T06:48Z · Phase 3
+**Decision:** Migrations are **mutable until the first deployment**, applied in filename order with a `schema_migrations` tracking table; development uses `npm run db:reset`. From the first deploy on they become append-only.
+**Why:** Faster iteration while nothing is deployed; the seed and tests always run from scratch.
+**Rejected:** Append-only from day one (churn of dozens of fix-up migrations).
+**Status:** Active.
+
+### D-057 · 2026-09-26T06:48Z · Phase 3
+**Decision:** Sandbox timing lives in a nullable **`bookings.auto_at`** (when the sandbox creator next acts), driven lazily by `sandbox_tick()` from the brand's own requests. Seeded states are frozen (`auto_at` null) except one accepted booking scheduled 25 s after a reset so the demo visibly moves.
+**Why:** Explicit and testable; avoids inferring "when did this state start" from several timestamps; refines D-028.
+**Rejected:** Cron; deriving delays from event timestamps.
+**Status:** Active.
+
+### D-058 · 2026-09-26T06:48Z · Phase 3
+**Decision:** The demo world is built by one SQL function, **`app.seed_demo_state()`**, used by both the initial seed and `reset_demo()`. Clicks are derived from each creator's own impressions and CTR (not hard-coded), so every Receipt is internally plausible (cost per click €4–9). Maya Okafor is the only non-sandbox creator and is claimed by the demo creator login.
+**Why:** One source of truth means reset can never drift from the seed; hard-coded click counts had produced an implausible 27% CTR.
+**Rejected:** A separate reset script; fixed click numbers.
+**Status:** Active.
+
+### D-059 · 2026-09-26T06:48Z · Phase 3
+**Decision:** Database correctness is proven by **five SQL suites** (ledger, state machine, RLS/privileges, tracking, sandbox), each run in a rolled-back transaction in a throwaway `byline_test` database, **and by mutation testing**: five deliberately broken rules were all caught. Several were caught by deeper layers than the one mutated (the `wallet_cents >= 0` CHECK and the `escrow_mismatch` guard).
+**Why:** "Money cannot be lost" is a claim that needs evidence; passing tests I wrote myself can be vacuous.
+**Rejected:** Application-level tests only.
+**Status:** Active. Runs in CI against a Postgres 15 service.
+
+### D-060 · 2026-09-26T06:48Z · Phase 3
+**Decision:** Folder `db/` (migrations, seed, tests) replaces `supabase/` in the conventions; tooling scripts are `.mts` run with Node's native type stripping (Node ≥ 22.18; CI uses 24).
+**Why:** Removes a build dependency (tsx) and matches D-051.
+**Rejected:** tsx / ts-node.
+**Status:** Active.
+
+### D-061 · 2026-09-26T06:48Z · Phase 3
+**Decision:** Environment: `DATABASE_URL` and `CLICK_HASH_SECRET` only. `.env.local` (gitignored, non-secret local values) is created for development; `.env.example` documents the hosted-database form (use the provider's pooled connection string).
+**Why:** Two variables are all the backend needs.
+**Rejected:** Supabase URL/anon/service keys.
+**Status:** Active.

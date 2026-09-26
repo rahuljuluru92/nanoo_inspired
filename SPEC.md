@@ -7,6 +7,11 @@ decisions in [DECISIONS.md](DECISIONS.md); visual rules in [design/BRIEF.md](des
 > Sources: Naano's public pages (concept, pricing model, roles) and our own product design. The user's logged-in walkthrough
 > (`recon/`) is used to **sanity-check flows and data only** — see the open questions in §12. Nothing visual or textual is copied.
 
+> **Amendments made in Phase 3 (the build overrides the text below where they differ; see DECISIONS D-051 … D-061):**
+> - The database is **portable Postgres** in `db/` (not Supabase). Accounts and sessions are app-owned (`accounts`, `sessions`); `profiles` does not exist. Supabase Realtime is replaced by polling (§7.5).
+> - RLS is enforced per request with `SET LOCAL ROLE byline_user` + `app.user_id`; users read through definer views (`public_creators`, `my_offers`, `wire_events`, `booking_metrics`, `public_receipts`).
+> - Extra RPCs: `create_account` and `link_lookup` / `record_click` (owner-only). `/go/[code]` uses `link_lookup` then `record_click`. `bookings` gains `auto_at`. `shortlist_requests` does not exist (D-037).
+
 ---
 
 ## 1. People and jobs
