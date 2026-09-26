@@ -15,7 +15,17 @@ function pool(): Pool {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error("DATABASE_URL is not set. Copy .env.example to .env.local.");
     const local = /(localhost|127\.0\.0\.1)/.test(url);
-    globalThis.__bylinePool = new Pool({ connectionString: url, max: 5, ssl: local ? undefined : { rejectUnauthorized: false } });
+    const p = new Pool({
+      connectionString: url,
+      max: 5,
+      ssl: local ? undefined : { rejectUnauthorized: false },
+      connectionTimeoutMillis: 10_000, // fail with a clear error instead of hanging when the database is unreachable (a suspended hosted database wakes in a few seconds)
+      idleTimeoutMillis: 10_000, // serverless instances freeze; do not hold sockets a pooler will have dropped
+      keepAlive: true,
+    });
+    // A hosted database or its pooler may drop an idle socket. Without a listener, Node treats that "error" event as fatal and kills the instance.
+    p.on("error", (e) => console.error("idle database client error:", e.message));
+    globalThis.__bylinePool = p;
   }
   return globalThis.__bylinePool;
 }

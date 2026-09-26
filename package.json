@@ -19,6 +19,9 @@
     "db:reset": "node scripts/db.mts reset",
     "db:test": "node scripts/db.mts test",
     "e2e": "playwright test",
+    "e2e:live": "node --env-file=.env.remote node_modules/@playwright/test/cli.js test",
+    "db:remote": "node --env-file=.env.remote scripts/db.mts",
+    "submission:check": "node scripts/submission-check.mts",
     "e2e:install": "playwright install chromium webkit"
   },
   "dependencies": {

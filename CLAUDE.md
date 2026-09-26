@@ -12,7 +12,7 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 ---
 
 ## STATUS  _(update at the end of every phase/slice)_
-**Last updated:** 2026-09-26T13:40Z · **Current phase: 8 — Harden & polish: DONE** · Phase 9 (ship) is next and needs the live URL · Clock started 2026-09-26T05:09Z
+**Last updated:** 2026-09-26T14:50Z · **Current phase: 9 — Ship: agent side DONE, blocked on the live URL** (needs the hosted Postgres + Vercel; the user does those) · Clock started 2026-09-26T05:09Z
 
 **Done**
 - **Phases 0–6:** capture, spec/design, design system, portable-Postgres backend, brand desk, creator side, the closed loop (D-001 … D-084).
@@ -21,11 +21,15 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 - **Phase 8 (D-090 … D-099):** skeletons + error boundaries + security headers + graceful tracked-link outage; a 64-test Playwright suite on the production build and a real Postgres (security/roles, 18 screens × 7 widths with axe and 44 px targets, the golden loop with two brand-new people + a whole-ledger audit, keyboard, concurrency/privilege, iPhone WebKit) — it found and we fixed: deep links lost at sign-in, Safari refusing the `Secure` cookie on http, the hold button below the fold in the phone tray, dialogs dropping focus, touch-width tablets getting 36 px controls, no skip link on public pages. Lighthouse 91–96 mobile (99 with applied throttling), a11y/best-practices/SEO 100 (Receipt is `noindex` by design). Real iOS Safari (simulator) renders the public pages.
 - **Verified:** typecheck, lint, 57 unit tests, 7 SQL suites, 64 e2e tests; CI now runs e2e with Chromium + WebKit.
 
+- **Phase 9 (D-100 … D-105):** deploy tooling (`db:check`, `db:remote`, `reset-demo`, TLS for hosted Postgres, `.env.remote` so secrets stay out of chat), e2e that can run against the live URL and cleans up after itself (dry-run verified locally), `siteUrl()` + Open Graph card, hardened connection pool, `README.md` (diagrams, cut list, differences), `DEPLOY.md`, `SUBMISSION.md` (5-min walkthrough script, intro structure, Q&A) and `npm run submission:check`.
+
 **In progress**
 - **User:** logged-in Naano walkthrough (`recon/`); canary 3.
 
-**Next**
-- Phase 9: README (architecture + ERD + cut list), final logs, walkthrough (≤5 min, camera on), 1-min intro, submission. **All of it needs the live URL, which needs the hosted Postgres + Vercel.**
+**Next** (all of it follows the live URL; the order is in SUBMISSION.md)
+- User: create Neon (or Supabase) + Vercel (DEPLOY.md), put the direct URL in `.env.remote`, tell the agent to run `npm run db:remote -- check|migrate|seed`.
+- Agent: `npm run e2e:live`, fill the README's three links, final commit with the logs, push (only when told), `npm run submission:check`.
+- User: record the 5-min walkthrough (camera on) and the 1-min intro (something not on the CV).
 
 **Open blockers / awaiting the user**
 1. **Hosted Postgres + Vercel:** create a free Supabase or Neon project + a Vercel account linked to GitHub. Pooled `DATABASE_URL` in `.env.local` and Vercel env — **never in chat**. Then `DATABASE_URL=… npm run db:migrate && npm run db:seed`; set `NEXT_PUBLIC_SITE_URL`. **Critical path: there is still no live URL.**
@@ -90,6 +94,7 @@ approve→payout · tracked links `/go/[code]` + real click events · Wire · Re
 - _Add new simplifications here as they happen, and log them in DECISIONS.md._
 - Phase 2 simplifications: no tablet tray drawer (bottom sheet below 1024, D-045) · no stacked brief form (popover slots everywhere, D-046) · focus ring is a plain ink outline (D-048).
 - Phase 4 simplifications (D-068): no within-budget filter · no unsent-brief persistence · campaign page is a summary until Phase 6.
+- Phase 9 notes: hosted-Postgres path (TLS, role creation, pooled vs direct URL) is untested until a hosted database exists · three e2e tests skip on a live site (IP spoofing) · the OG image is a static screenshot to re-take if the hero changes.
 - Phase 8 simplifications: CSP allows inline scripts/styles (no nonces, D-090) · not-found for another party's record is a 200 page behind the skeleton (D-099) · no back/forward cache on dynamic pages (D-098) · e2e not yet run against a live URL.
 - Phase 3 simplifications: polling instead of realtime (D-055) · no Supabase services (D-051) · sign-in throttling is per-instance (D-054).
 - **Where PLAN.md is outdated** (left rail, Geist/Inter Tight, free-shortlist form, pricing page): CLAUDE.md, SPEC.md and design/BRIEF.md win.
@@ -106,7 +111,7 @@ approve→payout · tracked links `/go/[code]` + real click events · Wire · Re
 | 6 | Slice C — approve → live → payout; `/go/[code]`; Wire; Receipt; Run-of-show | 150 min | **done** (D-077 … D-084) |
 | 7 | Landing (live desk, pricing section) + public media kit + API | 90 min | **done** (D-085 … D-089); the kit shipped in Phase 5 |
 | 8 | Harden + polish (responsive matrix, iOS Safari, a11y, e2e) | 90 min | **done** (D-090 … D-099); e2e runs on a local production build — re-run it against the live URL once deployed |
-| 9 | Ship (README, walkthrough, intro, submission) | 60–90 min | not started |
+| 9 | Ship (README, walkthrough, intro, submission) | 60–90 min | **agent side done** (D-100 … D-105): README, DEPLOY, SUBMISSION, deploy tooling, submission gate. **Pending the user:** hosted DB + Vercel, then walkthrough + intro videos |
 
 Golden path (demo + e2e): anonymous brief on landing → real lineup → demo brand adds 3 creators → tray projection → hold to commit → creator (phone) accepts + drafts →
 brand approves → creator goes live with URL → payout releases → tracked link opened → Wire ticks, clicks +1 live → Receipt shareable.
@@ -119,7 +124,7 @@ brand approves → creator goes live with URL → payout releases → tracked li
 
 **Folder structure**
 ```
-CLAUDE.md  DECISIONS.md  PLAN.md  SPEC.md  CAPTURE-TEST.md  README.md
+CLAUDE.md  DECISIONS.md  PLAN.md  SPEC.md  CAPTURE-TEST.md  README.md  DEPLOY.md  SUBMISSION.md
 design/BRIEF.md            visual + interaction rules (tokens, anti-list, components)
 .claude/{settings.json, hooks/capture.py}     .agent-logs/   (never edit; never gitignore)
 recon/                     screenshots + notes from the logged-in Naano walkthrough (flows/data only)
@@ -131,13 +136,13 @@ src/app/page.tsx (landing) · src/app/developers/ · src/app/api/{lineup,creator
 src/app/go/[code]/route.ts  ·  src/app/receipt/[code]/  ·  src/app/c/[handle]/   the public surfaces (tracked link, Receipt, media kit)
 src/components/creator/                        offer card, deal panel (editor / go-live / live), profile form, share mix, copy field
 src/lib/                                      built: cn, money, time, halftone, types, use-reduced-motion, db, auth, errors, password, rate-limit, demo, taxonomy, fit, projection · queries/ (chrome, desk, tick)
-src/app/styleguide/                           dev-only design-system page + fixtures (fictional data)
+src/app/styleguide/                           unlisted design-system page + fixtures (fictional data; disallowed in robots.txt)
 src/styles/tokens.css                         design tokens (the only place hex values live)
 e2e/   Playwright specs (1-security · 2-responsive · 3-golden-loop · 4-keyboard · 5-concurrency · webkit-smoke), helpers, global DB reset  ·  .github/workflows/ci.yml
 src/proxy.ts                                   passes the requested URL to server components (deep links survive sign-in, D-092)
 ```
 
-**Commands:** `npm run dev` · `typecheck` · `lint` · `test` · `build` · **`e2e`** (production build + real Postgres; `npm run e2e:install` once for Chromium + WebKit) · **`db:start` · `db:reset` (migrate + seed) · `db:migrate` · `db:seed` · `db:test`** (CI runs typecheck, lint, test, db:test, build).
+**Commands:** **`db:check` · `db:remote -- <cmd>` · `e2e:live` · `submission:check`** (hosted database and hand-in; DEPLOY.md, SUBMISSION.md) · `npm run dev` · `typecheck` · `lint` · `test` · `build` · **`e2e`** (production build + real Postgres; `npm run e2e:install` once for Chromium + WebKit) · **`db:start` · `db:reset` (migrate + seed) · `db:migrate` · `db:seed` · `db:test`** (CI runs typecheck, lint, test, db:test, build).
 **Local database:** `npm run db:start` (project-local Postgres on :54322, needs `LC_ALL` — the script sets it), then `npm run db:reset`. Demo password is public: see `src/lib/demo.ts`.
 **Local preview (D-050):** the `web` launch config does not start in this environment. Run `node node_modules/next/dist/bin/next dev --port 3100` in the background, then `preview_start web-attached`.
 If `next dev` ever re-adds a boilerplate block to this file, `agentRules: false` in `next.config.ts` should prevent it (D-044).

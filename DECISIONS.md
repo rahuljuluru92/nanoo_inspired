@@ -603,3 +603,39 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** Keeping the skeletons (D-090) is worth more than a 404 status on pages no crawler may visit.
 **Rejected:** Removing `loading.tsx` from detail routes.
 **Status:** Active.
+
+### D-100 · 2026-09-26T14:50Z · Phase 9
+**Decision:** **Secrets never enter the conversation, by construction.** The database tool (`scripts/db.mts`) gained TLS for non-local hosts, `check` (can this database host Byline: version, role privileges, migration state, pooled-vs-direct hint), `reset-demo` (restore the demo world; safe on a live database) and `cleanup-e2e`. Hosted credentials go in a gitignored `.env.remote`, read by `npm run db:remote -- <command>` and `npm run e2e:live`, so the agent can run them without ever seeing the URL. `reset` still refuses non-local databases without `--force`.
+**Why:** Prompts are logged verbatim into a public repo (CLAUDE.md rule); the deployment step is exactly where a connection string would be pasted. The pooled/direct distinction is the most common hosted-Postgres failure, so the tool says which it sees.
+**Rejected:** Asking the user to paste the URL; reading `.env.local` in the scripts (it holds the local URL); a dashboard-only setup with no verification step.
+**Status:** Active. Verified locally; the hosted path (TLS, role creation on Neon/Supabase) is unverified until a hosted database exists.
+
+### D-101 · 2026-09-26T14:50Z · Phase 9
+**Decision:** **The e2e suite can target the live site** (`E2E_BASE_URL` plus that site's `DATABASE_URL`): no local server, the demo world is restored first and **everything the tests created is removed afterwards** (accounts on `example.test`, their campaigns, bookings and ledger legs; balances recomputed; demo state reseeded), so the public roster is exactly as seeded. Three tests that spoof a client IP (API throttle, sign-in throttle, click de-duplication) skip on a live site, and the golden loop accepts one visitor instead of two.
+**Why:** The original Phase 8 plan asked for e2e on the live URL, and it is the strongest proof that the deployment, not just the code, works. A test that leaves fake creators on the public landing page would be worse than no test.
+**Rejected:** A separate smoke suite (drifts from the real one); running e2e against production without cleanup.
+**Status:** Active. Dry run: the whole suite in live mode against the local server, 61 passed / 3 skipped, and creator/account/brand/booking counts returned to 40 / 4 / 3 / 8.
+
+### D-102 · 2026-09-26T14:50Z · Phase 9
+**Decision:** `siteUrl()` uses `NEXT_PUBLIC_SITE_URL`, else Vercel's production hostname, else localhost, and feeds `metadataBase`, `robots.txt` (now with the sitemap line) and the sitemap. Open Graph card: a **static PNG of the real landing hero** (1200 × 630) with alt text, plus `og:title/description` and `twitter:card`.
+**Why:** One fewer environment variable to get wrong at deploy time; a shared link should look like the product. A screenshot is on-brand (real fonts, real data) and needs no font loading at the edge, which `ImageResponse` would.
+**Rejected:** A generated OG image with default fonts (off-brand); no card.
+**Status:** Active. Re-take the image if the landing hero changes.
+
+### D-103 · 2026-09-26T14:50Z · Phase 9
+**Decision:** **Connection pool hardened for hosted databases**: a listener on the pool's `error` event (an idle socket dropped by a pooler is otherwise an uncaught exception that kills the instance), a 10 s connect timeout (fail with an error page, not a hang), 10 s idle timeout and TCP keep-alive.
+**Why:** Serverless instances freeze and hosted poolers drop idle connections; this is the class of failure that works on a laptop and breaks in production.
+**Rejected:** Leaving defaults; a larger pool (the pooler, not the app, owns concurrency).
+**Status:** Active.
+
+### D-104 · 2026-09-26T14:50Z · Phase 9
+**Decision:** **The submission kit is part of the product.** `README.md` (idea, what's real, architecture / ERD / lifecycle diagrams, how to run and test, cut list with reasons, how it differs from the inspiration, how the agent was used), `DEPLOY.md` (Neon or Supabase + Vercel in about 20 minutes, with the failure table), `SUBMISSION.md` (order of work, a timed 5-minute walkthrough script with the golden path click by click, the 1-minute intro structure, likely questions) and `npm run submission:check`, a gate that fails until the README links are real, the live `/api/health` reports a connected database, the landing page is open signed-out, the GitHub repo is public and fully pushed, the tree is clean, `.agent-logs` exist and are not ignored, and no env file or secret-shaped string is tracked (patterns tested against samples).
+**Why:** The hand-in is judged on what a stranger can open in five minutes; a checklist that can fail is more reliable than one that can be ticked.
+**Rejected:** A README written after the fact; a manual checklist only.
+**Status:** Active. The intro video's content is the user's (something not on their CV); only its structure is supplied.
+
+### D-105 · 2026-09-26T14:50Z · Phase 9
+**Decision:** **Correction (reverses a claim, not a decision).** The Phase 8 docs commit and the end-of-phase summary said the corrupted `## Concept## Concept…` heading in CLAUDE.md had been fixed. The regular expression did not match, so nothing changed; the heading was fixed for real in the Phase 9 commit. The corruption itself came from earlier scripted edits that re-inserted the heading text.
+**Why:** The log is part of what is being judged; a false "done" that stays uncorrected is worse than the typo.
+**Rejected:** Silently fixing it.
+**Status:** Fixed. Lesson kept: after a scripted edit, assert the resulting text (`grep`) instead of trusting the script's exit code.
