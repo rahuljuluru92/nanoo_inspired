@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { asOwner } from "./db";
@@ -58,10 +58,13 @@ export const getSession = cache(async (): Promise<Session | null> => {
   return a ? { accountId: a.id, role: a.role, displayName: a.display_name, email: a.email, isDemo: a.is_demo } : null;
 });
 
-/** Gate for role-specific route groups. Signed out → /login (with a way back); wrong role → their own home. */
+/**
+ * Gate for role-specific route groups. Signed out → /login with a way back to the exact page asked for (from the proxy's header;
+ * `here` is the fallback); wrong role → their own home.
+ */
 export async function requireRole(role: Role, here: string): Promise<Session> {
   const s = await getSession();
-  if (!s) redirect(`/login?next=${encodeURIComponent(here)}`);
+  if (!s) redirect(`/login?next=${encodeURIComponent(safeNext((await headers()).get("x-byline-here"), here))}`);
   if (s.role !== role) redirect(homeFor(s.role));
   return s;
 }
