@@ -11,7 +11,7 @@
 | **Intro (1 min)** | INTRO_URL |
 | **Try it without signing up** | open the live site → *Enter as the demo brand* / *Enter as the demo creator* (one click, no credentials). Or type them: `demo.brand@byline.test` / `demo.creator@byline.test`, password `byline-demo` (shared, fictional data, resettable). To be both roles at once, use a second browser or a private window. Real accounts: `/join` (any email, no verification) |
 
-> Built for the 8x Engineering assignment: rebuild the *idea* behind a B2B LinkedIn-creator marketplace as an original product, with our own interface and a real backend (a working database and API, no mocked responses). Everything here was built with an AI coding agent; the whole conversation is in [`.agent-logs/`](.agent-logs), the plan and its live status in [`CLAUDE.md`](CLAUDE.md), and every decision, with what was rejected and why, in [`DECISIONS.md`](DECISIONS.md) (D-001 … D-099+).
+> Built for the 8x Engineering assignment: rebuild the *idea* behind a B2B LinkedIn-creator marketplace as an original product, with our own interface and a real backend (a working database and API, no mocked responses). Everything here was built with an AI coding agent; the whole conversation is in [`.agent-logs/`](.agent-logs), the plan in [`PLAN.md`](PLAN.md) and [`SPEC.md`](SPEC.md), and every decision, with what was rejected and why, in [`DECISIONS.md`](DECISIONS.md) (D-001 … D-109).
 
 ---
 
@@ -196,7 +196,7 @@ Paper `#F5F1EA`, ink `#15130F`, vermilion `#FF4B1F` (fills only, ink text on it;
 ## Repository map
 
 ```
-CLAUDE.md  DECISIONS.md  SPEC.md  PLAN.md  DEPLOY.md  SUBMISSION.md   plan + live status · every decision · behaviour · the original plan · how to deploy · hand-in kit
+DECISIONS.md  SPEC.md  PLAN.md  DEPLOY.md  CAPTURE-TEST.md   every decision · behaviour · the original plan · how to deploy · how capture was verified
 .agent-logs/  .claude/hooks/capture.py  CAPTURE-TEST.md              the agent conversation, captured automatically · how capture was verified
 db/{migrations,seed,tests}                                           SQL is the source of truth: schema, RLS, RPCs, seed, tests
 src/app/                                                             landing · (brand) desk, campaigns, wallet, wire · (creator) offers, deals, earnings, kit · receipt · c/[handle] · go/[code] · api/*
@@ -208,4 +208,4 @@ scripts/                                                             db.mts (che
 
 ## Working with the agent
 
-`CLAUDE.md` is the single source of truth for plan and status and was updated at the end of every phase and slice; `DECISIONS.md` is append-only (a reversal is a new entry that says what it reverses); work was done in vertical slices, verified in a browser, committed per slice with the logs in the same history. Mistakes stay on the record, for example: default privileges did not revoke `EXECUTE` from `PUBLIC` as first assumed (found by a test, D-069); server-action files must export literal `async function`s, which neither `tsc` nor ESLint catches (D-075); a documentation fix was reported as done when it had not applied, and was caught and corrected on the next pass. Secrets never entered the conversation: prompts are logged verbatim, so credentials live only in `.env.local` and the host's environment.
+A plan-and-status file, re-read at the start of every session and updated at the end of every phase and slice, was the agent's single source of truth (it is kept as a local working file, not in this repository); `DECISIONS.md` is append-only (a reversal is a new entry that says what it reverses); work was done in vertical slices, verified in a browser, committed per slice with the logs in the same history. Mistakes stay on the record, for example: default privileges did not revoke `EXECUTE` from `PUBLIC` as first assumed (found by a test, D-069); server-action files must export literal `async function`s, which neither `tsc` nor ESLint catches (D-075); a documentation fix was reported as done when it had not applied, and was caught and corrected on the next pass. Secrets never entered the conversation: prompts are logged verbatim, so credentials live only in `.env.local` and the host's environment.

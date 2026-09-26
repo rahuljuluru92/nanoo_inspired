@@ -90,7 +90,7 @@ else {
   const ignored = git("check-ignore", ".agent-logs/x.md");
   if (ignored) fail(".agent-logs is gitignored");
 }
-for (const f of ["CAPTURE-TEST.md", "CLAUDE.md", "DECISIONS.md", "README.md", "DEPLOY.md", ".github/workflows/ci.yml", ".env.example"]) {
+for (const f of ["CAPTURE-TEST.md", "DECISIONS.md", "README.md", "DEPLOY.md", ".github/workflows/ci.yml", ".env.example"]) {
   if (!existsSync(join(root, f))) fail(`missing ${f}`);
 }
 

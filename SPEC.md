@@ -1,6 +1,6 @@
 # SPEC — Byline (product + data + behaviour)
 
-What gets built, precisely enough that a fresh session can implement any slice without asking. Status lives in [CLAUDE.md](CLAUDE.md);
+What gets built, precisely enough that a fresh session can implement any slice without asking. Decisions live in [DECISIONS.md](DECISIONS.md);
 decisions in [DECISIONS.md](DECISIONS.md); visual rules in [design/BRIEF.md](design/BRIEF.md). Vocabulary is fixed:
 **Brief → Lineup → Wire → Receipt**, plus Tray, Escrow, Offer, Deal, Desk, Run-of-show.
 
@@ -220,4 +220,4 @@ Answers can change scope, so capture these while you're in the app (screenshots 
 7. **Tracking/results**: what metrics exist (clicks, leads, pipeline, impressions), how "leads/pipeline" get attributed, any per-creator breakdown.
 8. **Payout**: when it happens, what the creator sees (balance, history, bank/Stripe setup).
 9. Empty states, error states, notifications, and anything that annoyed or confused you (those are our opportunities).
-Record answers in `recon/NOTES.md`. **Use them for flows and data only** — do not carry over visuals, copy or names (see the Never-touch list in CLAUDE.md).
+Record answers in `recon/NOTES.md`. **Use them for flows and data only** — do not carry over visuals, copy or names (see the "never touch" list in PLAN.md §2).

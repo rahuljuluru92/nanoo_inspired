@@ -1,7 +1,7 @@
 # PLAN v2 — Byline: the wire desk for B2B creator campaigns
 
-> Long-form appendix. **Live status, conventions and known cuts live in [CLAUDE.md](CLAUDE.md); decisions in [DECISIONS.md](DECISIONS.md).
-> If this file conflicts with CLAUDE.md, CLAUDE.md wins.**
+> Long-form appendix, the original plan. **Decisions (and every change of plan) live in [DECISIONS.md](DECISIONS.md); behaviour in [SPEC.md](SPEC.md); visual rules in [design/BRIEF.md](design/BRIEF.md).
+> Where this file is outdated, those win.** The live status file was a local working document and is not part of this repository.
 
 Inspired by Naano's *idea*. Built from a blank page: its own concept, layout, visual language, interaction model,
 copy and data. Real backend end to end.

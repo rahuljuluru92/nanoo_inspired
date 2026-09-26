@@ -16,3 +16,8 @@ playwright-report/
 
 # local database cluster (never committed)
 .local/
+
+# Working files that are deliberately NOT part of the public repo (kept in .local/ instead; see DECISIONS.md D-109)
+/CLAUDE.md
+/CLAUDE.local.md
+/SUBMISSION.md

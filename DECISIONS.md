@@ -657,3 +657,10 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** The claim to be judged is a working deployed product; this is the evidence, run on the artefact a stranger opens.
 **Rejected:** Declaring it done because health is green.
 **Status:** Active. The WebKit smoke test now waits for a client navigation or a router refresh to settle before starting another navigation: with real network latency, `page.goto` was interrupted by the app's own in-flight navigation (a test race, not an app defect).
+
+### D-109 · 2026-09-26T17:53Z · Phase 9
+**Decision:** **`CLAUDE.md` and `SUBMISSION.md` are no longer part of the public repository.** Both now live in `.local/` (gitignored), and `/CLAUDE.md`, `/CLAUDE.local.md` and `/SUBMISSION.md` are ignored at the root so they cannot be re-added by accident. `CLAUDE.md` is still updated at the end of every phase or slice, but locally; `DECISIONS.md` (append-only) and `.agent-logs/` remain the public record. Links to the two files were removed from README, DEPLOY, PLAN, SPEC and recon; the submission gate no longer requires `CLAUDE.md`.
+**Why:** The user asked for the repository to show the product, its decisions and the agent's conversation, not the private working notes (the recording script and the running status file).
+**Reverses:** the practice, from the original setup instructions, of committing `CLAUDE.md` with every phase (see the end-of-phase ritual). Nothing about the app changes: neither file is read by the application, the build, CI or Vercel.
+**Rejected:** Deleting them (the working notes are still needed); rewriting git history to erase earlier versions (needs a force-push, breaks the interleaved commit-and-log evidence, and the agent logs quote the same content anyway). **Earlier commits and `.agent-logs/` still contain both files' past text.** This changes what the current tree shows, not what history contains.
+**Status:** Active. Claude Code no longer auto-loads `CLAUDE.md`; a memory note points to `.local/CLAUDE.md`, and the file's own header says so.

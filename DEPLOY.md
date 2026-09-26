@@ -91,4 +91,4 @@ Rate limits (sign-in, public API) are in memory per server instance, so a busy d
 
 - `.env.local` and `.env.remote` are gitignored. Check: `git check-ignore -v .env.remote` prints the rule.
 - `git ls-files | grep -i env` should list only `.env.example`.
-- `npm run submission:check` (see `SUBMISSION.md`) also scans tracked files for connection strings and keys.
+- `npm run submission:check` also scans tracked files for connection strings and keys.

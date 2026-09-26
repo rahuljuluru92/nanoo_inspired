@@ -1,7 +1,7 @@
 # recon/ — what we learned about the reference product
 
 Purpose: understand **flows, data and mechanics** of the reference product so ours is complete and credible.
-**Not** a source of visuals, copy, names, stats or people — those are on the Never-touch list in [../CLAUDE.md](../CLAUDE.md).
+**Not** a source of visuals, copy, names, stats or people — those are on the "never touch" list in [../PLAN.md](../PLAN.md) §2.
 
 ## A. Public-page findings (agent, 2026-09-26; own words)
 Sources: home, `/creators`, `/register`, `/selection`, `/free-tools`, `/help`, `llms.txt`, `pricing.md`; desktop and 375 px mobile.
