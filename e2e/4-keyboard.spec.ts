@@ -96,3 +96,17 @@ test("the brief sentence can be edited from the keyboard", async ({ browser }) =
   await expect(budget).toBeFocused();
   await ctx.close();
 });
+
+test("with reduced motion, the hold is a click that opens the confirmation (no press-and-hold gesture needed)", async ({ browser }) => {
+  const ctx = await browser.newContext({ storageState: STATE.brand, reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  await page.goto("/desk");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.getByRole("button", { name: /^Add .* to lineup$/ }).first().click();
+  await page.locator("summary").filter({ hasText: "Campaign details" }).click();
+  await page.getByLabel("Destination link").fill("https://halcyon.example/soc2-guide");
+  await page.getByRole("region", { name: "Campaign tray" }).getByRole("button", { name: /Hold to place in escrow/ }).click();
+  await expect(page.getByRole("dialog", { name: "Place this hold?" })).toBeVisible();
+  await expect(page.getByText("Click to review and confirm.")).toBeVisible();
+  await ctx.close();
+});

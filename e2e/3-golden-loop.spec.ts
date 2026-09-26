@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { HUMAN_UA, sql, watchErrors } from "./helpers";
+import { HUMAN_UA, auditLedger, sql, watchErrors } from "./helpers";
 
 /**
  * The whole product, with two brand-new people who have never met, through the real interface and the real database:
@@ -249,22 +249,7 @@ test("the Receipt is public and the creator has been paid in full", async ({ bro
 });
 
 test("the books balance: nothing created, nothing lost", async () => {
-  const one = async (q: string) => Number((await sql<{ n: string }>(q))[0]!.n);
-  // every transaction nets to zero
-  expect(await one("select count(*) as n from (select txn_id from ledger_entries group by txn_id having sum(amount_cents) <> 0) x")).toBe(0);
-  // each cached wallet equals what its ledger says
-  expect(
-    await one(`select count(*) as n from brands b where b.wallet_cents <> coalesce((select sum(amount_cents) from ledger_entries l where l.brand_id = b.id and l.account = 'brand_wallet'), 0)`),
-  ).toBe(0);
-  expect(
-    await one(`select count(*) as n from creators c where c.balance_cents <> coalesce((select sum(amount_cents) from ledger_entries l where l.creator_id = c.id and l.account = 'creator_balance'), 0)`),
-  ).toBe(0);
-  // escrow holds exactly the price of every deal in flight and nothing for a deal that is over
-  expect(
-    await one(`select count(*) as n from bookings b
-               where coalesce((select sum(amount_cents) from ledger_entries l where l.booking_id = b.id and l.account = 'escrow'), 0)
-                     <> case when b.status in ('paid','declined','cancelled') then 0 else b.price_cents end`),
-  ).toBe(0);
+  expect(await auditLedger()).toEqual([]);
   // and this deal paid the creator exactly the price, with nothing skimmed
   const [paid] = await sql<{ n: string }>("select coalesce(sum(amount_cents),0) as n from ledger_entries where booking_id = $1 and account = 'creator_balance'", [bookingId]);
   expect(Number(paid!.n)).toBe(RATE * 100);

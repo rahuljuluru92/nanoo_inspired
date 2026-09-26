@@ -71,3 +71,39 @@ export async function smallTargets(page: Page): Promise<string[]> {
     return [...new Set(out)];
   });
 }
+
+/** Runs `fn` the way the app does: one transaction, privileges dropped to the app role, the caller recorded for row-level security. */
+export async function asUserTx<T>(userId: string, fn: (q: (text: string, params?: unknown[]) => Promise<pg.QueryResult>) => Promise<T>): Promise<T> {
+  const c = new pg.Client({ connectionString: DB_URL });
+  await c.connect();
+  try {
+    await c.query("begin");
+    await c.query("set local role byline_user");
+    await c.query("select set_config('app.user_id', $1, true)", [userId]);
+    const out = await fn((text, params = []) => c.query(text, params));
+    await c.query("commit");
+    return out;
+  } catch (e) {
+    await c.query("rollback").catch(() => {});
+    throw e;
+  } finally {
+    await c.end();
+  }
+}
+
+/** The money invariants, for the whole database. Returns what is wrong (empty when the books balance). */
+export async function auditLedger(): Promise<string[]> {
+  const bad: string[] = [];
+  const n = async (q: string) => Number((await sql<{ n: string }>(q))[0]!.n);
+  if (await n("select count(*) as n from (select txn_id from ledger_entries group by txn_id having sum(amount_cents) <> 0) x")) bad.push("a transaction does not net to zero");
+  if (await n(`select count(*) as n from brands b where b.wallet_cents <> coalesce((select sum(amount_cents) from ledger_entries l where l.brand_id = b.id and l.account = 'brand_wallet'), 0)`)) bad.push("a brand wallet differs from its ledger");
+  if (await n(`select count(*) as n from brands where wallet_cents < 0`)) bad.push("a wallet is negative");
+  if (await n(`select count(*) as n from creators c where c.balance_cents <> coalesce((select sum(amount_cents) from ledger_entries l where l.creator_id = c.id and l.account = 'creator_balance'), 0)`)) bad.push("a creator balance differs from its ledger");
+  if (
+    await n(`select count(*) as n from bookings b
+             where coalesce((select sum(amount_cents) from ledger_entries l where l.booking_id = b.id and l.account = 'escrow'), 0)
+                   <> case when b.status in ('paid','declined','cancelled') then 0 else b.price_cents end`)
+  )
+    bad.push("escrow does not match a booking's state");
+  return bad;
+}
