@@ -639,3 +639,9 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** The log is part of what is being judged; a false "done" that stays uncorrected is worse than the typo.
 **Rejected:** Silently fixing it.
 **Status:** Fixed. Lesson kept: after a scripted edit, assert the resulting text (`grep`) instead of trusting the script's exit code.
+
+### D-106 · 2026-09-26T15:54Z · Phase 9
+**Decision:** **The hosted database is live and verified.** Neon (Postgres 18.6, `us-east-2`): `db:check` passed, all 8 migrations applied on the **direct** host (the saved string was the pooled one; `-pooler` was removed from the host in `.env.remote` without ever printing it) and the seed loaded (40 creators, 3 brands, 8 bookings). The production build run locally against it passed the whole e2e suite in live mode: 61 passed, 3 skipped (IP spoofing), with the test data removed afterwards. Two WebKit phone tests first failed on `TypeError: Load failed`: Safari's wording for the app's own `router.refresh()` being cancelled when the test navigated away right after the toast, made visible by the extra latency to Neon. The WebKit spec now treats that message as cancelled-request noise (the UI assertions still catch real failures).
+**Why:** The tooling had only ever run against local Postgres; role creation, `SET LOCAL ROLE` under RLS, TLS and the pool configuration are exactly what differs on a hosted database, and this run exercised all of them.
+**Rejected:** Migrating through the pooler; loosening the console-error guard for every browser.
+**Status:** Active. Still to do: Vercel (with the **pooled** string as `DATABASE_URL`), then the same suite against the deployed URL.

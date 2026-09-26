@@ -5,8 +5,9 @@ import { overflowPx, watchErrors } from "./helpers";
  * The same journeys on WebKit with an iPhone's viewport and touch: the engine every iOS browser uses. Safari differs from Chrome in
  * cookies, pointer events, 100dvh, sticky positioning and form controls, so the money path is walked here too.
  */
-// Safari reports a link prefetch that a fast navigation cancelled as an unhandled "access control checks" error; it is not a failure.
-const CANCELLED_PREFETCH = /_rsc=.*access control checks/;
+// Safari words a request that our own fast navigation cancelled (a link prefetch, or the refresh that follows an action) as an
+// "access control checks" error or a bare "TypeError: Load failed". Neither is a failure; the UI assertions catch real ones.
+const CANCELLED_PREFETCH = /_rsc=.*access control checks|^TypeError: Load failed$/;
 
 test("a phone: landing → demo brand → lineup → hold → campaign, then the creator side", async ({ page }) => {
   const errors = watchErrors(page, [CANCELLED_PREFETCH]);

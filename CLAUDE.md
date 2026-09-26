@@ -32,7 +32,7 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 - User: record the 5-min walkthrough (camera on) and the 1-min intro (something not on the CV).
 
 **Open blockers / awaiting the user**
-1. **Hosted Postgres + Vercel:** create a free Supabase or Neon project + a Vercel account linked to GitHub. Pooled `DATABASE_URL` in `.env.local` and Vercel env — **never in chat**. Then `DATABASE_URL=… npm run db:migrate && npm run db:seed`; set `NEXT_PUBLIC_SITE_URL`. **Critical path: there is still no live URL.**
+1. **Vercel** (the hosted Postgres is done: Neon, migrated + seeded + e2e-verified, D-106). Create the Vercel project from the GitHub repo; env `DATABASE_URL` = the **pooled** Neon string, `CLICK_HASH_SECRET` = random. Needs a push first (user decides when). **Original note:** hosted Postgres + Vercel: create a free Supabase or Neon project + a Vercel account linked to GitHub. Pooled `DATABASE_URL` in `.env.local` and Vercel env — **never in chat**. Then `DATABASE_URL=… npm run db:migrate && npm run db:seed`; set `NEXT_PUBLIC_SITE_URL`. **Critical path: there is still no live URL.**
 2. Naano logged-in walkthrough (agent cannot sign up).
 3. Canary 3 (fresh desktop session; first PROMPT must show `claude-sonnet-5`).
 4. Author handle (`rahuljuluru92` vs `rahuljuluru786`, D-008); design direction + name "Byline"; AI brief parsing needs an Anthropic key (default off).
