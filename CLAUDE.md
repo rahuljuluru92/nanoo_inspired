@@ -12,30 +12,29 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 ---
 
 ## STATUS  _(update at the end of every phase/slice)_
-**Last updated:** 2026-09-26T06:48Z · **Current phase: 3 — Data foundation: DONE locally** (deploy pending a hosted Postgres) · Phase 4 in progress · Clock started 2026-09-26T05:09Z
+**Last updated:** 2026-09-26T06:58Z · **Current phase: 4 — Brief → Lineup → Tray → commit: DONE** · Phase 5 (creator side) next · Clock started 2026-09-26T05:09Z
 
 **Done**
-- **Phases 0–2:** capture hook, repo, spec + design brief, design system + shell (`/styleguide`). See DECISIONS D-001 … D-050.
-- **Phase 3:** portable-Postgres backend (D-051): 6 migrations in `db/migrations` (schema, internal state machine, public RPCs, RLS + views + grants, demo world), deterministic seed (40 fictional creators, 3 brands, 8 bookings, ~550 clicks), password/session auth, sign-in + join + demo login, role-gated `(brand)` / `(creator)` layouts with real wallet/escrow/Wire in the masthead, `/api/health`. **Verified:** 5 SQL suites pass; 5/5 mutants caught (D-059); 15 unit tests; login → `/desk` works against the real DB; sandbox creators reply on their own.
-- Decisions D-051 … D-061 logged; SPEC amended.
+- **Phases 0–3:** capture hook, repo, spec + design brief, design system + shell, portable-Postgres backend with RLS/RPCs/seed/auth (D-001 … D-061). Phase 3's *deploy* still needs a hosted Postgres (blocker 1).
+- **Phase 4:** `/desk` (sentence-as-search, live-ranked lineup with fit + reasons, tray with projection / cost per click / budget bar, campaign details with inline validation, hold-to-commit → one transaction creating the campaign and placing the escrow hold, add-test-funds from the tray), `/campaigns` + `/campaigns/[id]` (summary + bookings, auto-refreshing while sandbox creators reply), `/wallet` (ledger + top-up), `/wire`, read-only creator `/offers`. Decisions D-062 … D-068.
+- **Verified:** typecheck, lint, 28 unit tests (13 on fit/projection), 5 SQL suites, production build. Live, against the real DB: full desktop and **phone** journeys (pick → details → shortfall → add funds → commit), sandbox creators accepting/declining/drafting on their own, refunds reconciling to the euro, **cross-user** (a brand-new account's offer appears on the demo creator's side), wrong-password and unknown-email messages identical, sign-out, registration validation. Money invariants re-audited after live use (ledger nets to zero, caches = ledger, escrow = price). axe: 0 violations on desk, campaigns, campaign, wallet, wire, login, join at 375 (and 1280 for the brand pages); no horizontal overflow; all touch targets ≥ 44 px.
 
 **In progress**
-- **Phase 4:** brief → lineup → tray → hold-to-commit on real data.
 - **User:** logged-in Naano walkthrough (`recon/`); canary 3.
 
 **Next**
-- Phase 5 (creator side) → Phase 6 (approve/payout, `/go/[code]`, Wire, Receipt, Run-of-show).
+- **Phase 5 — creator side (mobile-first):** creator sign-up + onboarding + public media kit, offers inbox with accept/decline, deliver form (autosaving draft, submit, mark live), earnings. Then Phase 6 (approve/request changes/payout on the brand side, `/go/[code]`, Wire polling, Receipt, Run-of-show).
 
 **Open blockers / awaiting the user**
-1. **Hosted Postgres + Vercel** (needed for the Phase 3 *deploy* exit test): create a free Supabase or Neon project and a Vercel account linked to GitHub. Put the pooled `DATABASE_URL` in `.env.local` and Vercel env — **never in chat**. Then: `DATABASE_URL=… npm run db:migrate && npm run db:seed`.
+1. **Hosted Postgres + Vercel** (for the Phase 3 *deploy* exit test): create a free Supabase or Neon project + a Vercel account linked to GitHub. Put the pooled `DATABASE_URL` in `.env.local` and Vercel env — **never in chat**. Then `DATABASE_URL=… npm run db:migrate && npm run db:seed`.
 2. Naano logged-in walkthrough (agent cannot sign up).
 3. Canary 3 (fresh desktop session; first PROMPT must show `claude-sonnet-5`).
 4. Author handle (`rahuljuluru92` vs `rahuljuluru786`, D-008); design direction + name "Byline"; AI brief parsing needs an Anthropic key (default off).
-5. **Push policy:** local commits are ahead of `origin` — push at each phase end? Two sessions share the tree; commit from one at a time (D-027).
+5. **Push policy:** four local commits are ahead of `origin` — push at each phase end? Two sessions share the tree; commit from one at a time (D-027).
 
 ---
 
-## Concept## Concept## Concept## Concept — four nouns (use these words in UI **and** code)
+## Concept## Concept## Concept## Concept## Concept — four nouns (use these words in UI **and** code)
 > **Brief → Lineup → Wire → Receipt.** Brands write a **Brief**, assemble a **Lineup**, watch the **Wire**, keep a **Receipt**.
 > Creators get **Offers**, file a **Draft**, go **Live**, get **Paid**, and build a media kit of verified Receipts.
 
@@ -88,6 +87,7 @@ approve→payout · tracked links `/go/[code]` + real click events · Wire · Re
 - Pricing is a landing-page section, no plans (D-036) · `shortlist_requests` dropped (D-037) · no left rail (D-033) · no withdrawals, no dispute flow · creator stats self-reported/seeded and labelled (D-040) · sandbox creators reply automatically, clearly labelled (D-028).
 - _Add new simplifications here as they happen, and log them in DECISIONS.md._
 - Phase 2 simplifications: no tablet tray drawer (bottom sheet below 1024, D-045) · no stacked brief form (popover slots everywhere, D-046) · focus ring is a plain ink outline (D-048).
+- Phase 4 simplifications (D-068): no within-budget filter · no unsent-brief persistence · campaign page is a summary until Phase 6.
 - Phase 3 simplifications: polling instead of realtime (D-055) · no Supabase services (D-051) · sign-in throttling is per-instance (D-054).
 - **Where PLAN.md is outdated** (left rail, Geist/Inter Tight, free-shortlist form, pricing page): CLAUDE.md, SPEC.md and design/BRIEF.md win.
 
@@ -98,7 +98,7 @@ approve→payout · tracked links `/go/[code]` + real click events · Wire · Re
 | 1 | Recon + spec + design brief | 60–75 min | **agent side done** (SPEC, design brief, recon kit); user's logged-in walkthrough + `recon/NOTES.md` pending |
 | 2 | Design system + shell (`/styleguide`) | 90 min | **done** (D-042 … D-050) |
 | 3 | Data foundation (`db/`: migrations, RLS, RPCs, seed, auth, demo logins) | 90 min | **done locally** (D-051 … D-061); **deploy pending** a hosted Postgres |
-| 4 | Slice A — Brief → Lineup → Tray → hold-to-commit escrow | 150 min | not started |
+| 4 | Slice A — Brief → Lineup → Tray → hold-to-commit escrow | 150 min | **done** (D-062 … D-068) |
 | 5 | Slice B — Creator side (mobile-first) | 120 min | not started |
 | 6 | Slice C — approve → live → payout; `/go/[code]`; Wire; Receipt; Run-of-show | 150 min | not started |
 | 7 | Landing (live desk, pricing section) + public media kit + API | 90 min | not started |
@@ -123,7 +123,7 @@ recon/                     screenshots + notes from the logged-in Naano walkthro
 db/{migrations/, seed/, tests/}              SQL is the source of truth for the schema + RPCs (+ scripts/db.mts, scripts/db-local.sh)
 src/app/(public)/ (brand)/ (creator)/         route groups · api/ · go/[code] · receipt/[code] · c/[handle]
 src/components/{ui,desk,wire,receipt,shell,art}/   built: primitives, desk (BriefSentence/RosterRow/Tray/HoldButton), wire, receipt (+RunOfShow), shell, art (Halftone/Wordmark)
-src/lib/                                      built: cn, money, time, halftone, types, use-reduced-motion, db, auth, errors, password, rate-limit, demo · queries/ · planned: fit.ts, projection.ts
+src/lib/                                      built: cn, money, time, halftone, types, use-reduced-motion, db, auth, errors, password, rate-limit, demo, taxonomy, fit, projection · queries/ (chrome, desk, tick)
 src/app/styleguide/                           dev-only design-system page + fixtures (fictional data)
 src/styles/tokens.css                         design tokens (the only place hex values live)
 e2e/  .github/workflows/ci.yml
@@ -144,6 +144,7 @@ If `next dev` ever re-adds a boilerplate block to this file, `agentRules: false`
 
 **Rules of the road**
 - State changes and money **only via RPCs**; RLS on every table; brands see only their campaigns, creators only their bookings, public sees only kits + receipts. **User requests use `asUser()` (drops to `byline_user`); `asOwner()` is for sessions, account creation and click recording only** (D-052).
+- **Every brand page awaits `tickSandbox(userId)` before reading** (D-064). Server actions return `{ ok, error: AppError }`, never throw raw DB errors (`toAppError`).
 - Migrations are mutable until the first deploy (D-056); after that, append-only. Money is integer cents; every ledger transaction nets to zero (enforced by a deferred trigger).
 - No hard-coded hex or font names in components — tokens only (enforced by the constrained Tailwind theme, D-043). No shadows, no smooth gradients.
 - Vermilion is a **fill** only, with ink text on it; small vermilion text uses `text-vermilion-ink`. Control borders are ink or `line-strong`, never vermilion or `line`.

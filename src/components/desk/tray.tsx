@@ -26,6 +26,9 @@ interface TrayProps {
   onRemove: (handle: string) => void;
   onCommit: () => Promise<void> | void;
   onAddFunds?: () => void;
+  /** When set, the hold is disabled and this says what is missing. */
+  blockedReason?: string;
+  onFixBlocked?: () => void;
 }
 
 function totals(items: TrayItem[]) {
@@ -36,7 +39,7 @@ function totals(items: TrayItem[]) {
   return { total, low, mid, high };
 }
 
-function TrayPanel({ items, budgetCents, walletCents, onRemove, onCommit, onAddFunds, showHeading = true }: TrayProps & { showHeading?: boolean }) {
+function TrayPanel({ items, budgetCents, walletCents, onRemove, onCommit, onAddFunds, blockedReason, onFixBlocked, showHeading = true }: TrayProps & { showHeading?: boolean }) {
   const { total, low, mid, high } = totals(items);
   const over = budgetCents > 0 && total > budgetCents;
   const short = total - walletCents;
@@ -112,8 +115,19 @@ function TrayPanel({ items, budgetCents, walletCents, onRemove, onCommit, onAddF
         </div>
       ) : null}
 
+      {items.length > 0 && blockedReason ? (
+        <div className="border border-line-strong p-3 text-small">
+          <p>{blockedReason}</p>
+          {onFixBlocked ? (
+            <Button variant="secondary" className="mt-2" onClick={onFixBlocked}>
+              Fill in details
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
       <HoldButton
-        disabled={items.length === 0 || short > 0}
+        disabled={items.length === 0 || short > 0 || Boolean(blockedReason)}
         onCommit={onCommit}
         summary={
           <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
@@ -156,7 +170,18 @@ export function Tray(props: TrayProps) {
         </button>
       </div>
       <Sheet open={open} onOpenChange={setOpen} title={n === 0 ? "Your tray is empty" : `Your tray · ${n} ${n === 1 ? "creator" : "creators"}`} side="bottom">
-        <TrayPanel {...props} showHeading={false} />
+        <TrayPanel
+          {...props}
+          showHeading={false}
+          onFixBlocked={
+            props.onFixBlocked
+              ? () => {
+                  setOpen(false); // the details live on the page behind the sheet: get out of the way first
+                  props.onFixBlocked?.();
+                }
+              : undefined
+          }
+        />
       </Sheet>
     </>
   );

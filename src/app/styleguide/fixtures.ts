@@ -16,7 +16,7 @@ export interface DemoCreator extends LineupCreator {
 
 const p = (low: number, mid: number, high: number) => ({ low, mid, high });
 
-export const DEMO_CREATORS: DemoCreator[] = [
+const RAW_CREATORS: Omit<DemoCreator, "id">[] = [
   { handle: "maya-okafor", name: "Maya Okafor", headline: "Security lead, writes on SOC 2 for fintech", verticals: ["Security", "Fintech"], followers: 41200, rateCents: 140000, fit: 0, why: [], projection: p(520, 700, 900), tags: { buyers: ["CTOs", "Security leads"], verticals: ["Security", "Fintech"], geo: ["France", "Germany"] }, ctr: 1.6 },
   { handle: "jonas-brandt", name: "Jonas Brandt", headline: "DevSecOps engineer. Pipelines, secrets, audits", verticals: ["Security", "Devtools"], followers: 18600, rateCents: 90000, fit: 0, why: [], projection: p(380, 500, 640), tags: { buyers: ["CTOs", "Security leads"], verticals: ["Security", "Devtools"], geo: ["Germany", "Netherlands"] }, ctr: 1.9 },
   { handle: "lea-marchetti", name: "Léa Marchetti", headline: "Compliance operations for regulated startups", verticals: ["Fintech", "Security"], followers: 63800, rateCents: 185000, fit: 0, why: [], projection: p(700, 920, 1150), tags: { buyers: ["Security leads", "Founders"], verticals: ["Fintech", "Security"], geo: ["France", "Spain"] }, ctr: 1.3 },
@@ -26,6 +26,7 @@ export const DEMO_CREATORS: DemoCreator[] = [
   { handle: "anika-rao", name: "Anika Rao", headline: "People ops in scale-ups; hiring that holds up", verticals: ["HR-tech"], followers: 34900, rateCents: 120000, fit: 0, why: [], projection: p(450, 610, 780), tags: { buyers: ["HR leaders"], verticals: ["HR-tech"], geo: ["Netherlands", "Germany"] }, ctr: 1.4 },
   { handle: "sven-lindqvist", name: "Sven Lindqvist", headline: "Platform engineer. Developer experience", verticals: ["Devtools"], followers: 12800, rateCents: 70000, fit: 0, why: [], projection: p(290, 380, 490), tags: { buyers: ["CTOs", "Product managers"], verticals: ["Devtools"], geo: ["Nordics", "Germany"] }, ctr: 2.0 },
 ];
+export const DEMO_CREATORS: DemoCreator[] = RAW_CREATORS.map((c) => ({ ...c, id: c.handle }));
 
 const share = (want: string[], have: string[]) => (want.length === 0 ? 1 : want.filter((w) => have.includes(w)).length / want.length);
 

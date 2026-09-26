@@ -39,6 +39,7 @@ export interface Projection {
 }
 
 export interface LineupCreator {
+  id: string;
   handle: string;
   name: string;
   headline: string;

@@ -375,3 +375,45 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** Two variables are all the backend needs.
 **Rejected:** Supabase URL/anon/service keys.
 **Status:** Active.
+
+### D-062 · 2026-09-26T06:58Z · Phase 4
+**Decision:** **Fit and projection are computed in the browser** over the whole public catalogue (40 rows sent to the client), using the same pure functions the server will use (`lib/fit.ts`, `lib/projection.ts`, 13 unit tests). Prices are never taken from the client: `place_hold` reads them from `creators.rate_cents`.
+**Why:** Re-ranking is instant as the brief changes (no round trip per keystroke); at this catalogue size sending everything is cheaper than a query per change; the security-relevant number (price) stays server-side.
+**Rejected:** A `/api/lineup` call per slot change; SQL scoring.
+**Status:** Active. Revisit if the catalogue grows past a few hundred creators.
+
+### D-063 · 2026-09-26T06:58Z · Phase 4
+**Decision:** Committing a lineup runs **`create_campaign` and `place_hold` in one transaction** (`commitLineup` server action).
+**Why:** A failed hold (say, insufficient funds) must leave nothing behind; separate calls would orphan a campaign.
+**Rejected:** Two calls; creating the campaign when the brief is first edited.
+**Status:** Active.
+
+### D-064 · 2026-09-26T06:58Z · Phase 4
+**Decision:** **The sandbox tick runs once per request, before anything reads**, via React `cache()` (`tickSandbox`), awaited by the layout and by every brand page.
+**Why:** Found in live testing: layout and page render in parallel, so the page read bookings before the layout's tick committed and showed state one step stale. The database was right; the page was behind.
+**Rejected:** Ticking only in the layout; ticking after render.
+**Status:** Active. Refines D-028/D-057.
+
+### D-065 · 2026-09-26T06:58Z · Phase 4
+**Decision:** Desk behaviour: the campaign title defaults from the product, the destination link is required and validated inline, and a blocked commit says exactly why and offers "Fill in details" (which first closes the mobile sheet). A direct visit preloads a clearly-labelled **example brief**; URL parameters (taxonomy-filtered) can seed the brief, ready for the landing page's handoff in Phase 7.
+**Why:** Time-to-first-lineup is near zero, and no dead end: every disabled state explains itself.
+**Rejected:** Blank sentence on first visit; silently disabling the button.
+**Status:** Active.
+
+### D-066 · 2026-09-26T06:58Z · Phase 4
+**Decision:** The brief sentence is the desk page's **`h1`** (axe `page-has-heading-one`).
+**Why:** Screen-reader users navigate by heading; the sentence *is* the page's purpose.
+**Rejected:** A separate visually-hidden heading.
+**Status:** Active.
+
+### D-067 · 2026-09-26T06:58Z · Phase 4
+**Decision:** Live updates on the campaign page and the Wire use **`AutoRefresh`** (`router.refresh` every 5–8 s **only while the tab is visible**; the campaign page polls only while sandbox creators still have something pending).
+**Why:** Implements D-055 cheaply and kindly: no polling in background tabs or when nothing can change.
+**Rejected:** Always-on polling; websockets.
+**Status:** Active. Side-effect noted in testing: a hidden browser pane never polls, and `requestAnimationFrame` counters do not animate there; both resume when visible.
+
+### D-068 · 2026-09-26T06:58Z · Phase 4
+**Decision:** Phase 4 simplifications: no "only within budget" filter, no persistence of an unsent brief across reloads, campaign page is a summary + bookings table (Run-of-show, review actions and tracked links arrive in Phase 6), creator sign-up shows an honest "opens in the next release" (Phase 5).
+**Why:** Each is off the golden path for this slice.
+**Rejected:** Building them now.
+**Status:** Active.

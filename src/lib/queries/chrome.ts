@@ -1,5 +1,6 @@
 import "server-only";
 import { asUser } from "@/lib/db";
+import { tickSandbox } from "./tick";
 import { formatEUR } from "@/lib/money";
 import type { WireEvent, WireKind } from "@/lib/types";
 import type { Figure } from "@/components/shell/masthead";
@@ -20,8 +21,8 @@ const toWire = (r: WireRow): WireEvent => ({ id: r.id, at: r.at.toISOString(), k
 
 /** What the masthead shows for a brand: wallet, escrow, the latest Wire events, unread count. Also nudges the sandbox creators. */
 export async function brandChrome(userId: string): Promise<Chrome> {
+  await tickSandbox(userId);
   return asUser(userId, async (c) => {
-    await c.query("select sandbox_tick()");
     const money = await c.query<{ wallet_cents: number; escrow_cents: number }>(
       `select b.wallet_cents,
               coalesce((select sum(amount_cents) from ledger_entries l where l.brand_id = b.id and l.account = 'escrow'), 0)::int as escrow_cents

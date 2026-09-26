@@ -78,13 +78,13 @@ function MultiPicker({ options, value, onChange, name }: { options: string[]; va
  * The brief IS the search: "I'm launching [product] to [buyers] in [verticals], across [geo], with [budget]."
  * Every slot change calls onChange — the lineup below re-ranks live.
  */
-export function BriefSentence({ value, onChange, options }: { value: BriefValue; onChange: (v: BriefValue) => void; options: BriefOptions }) {
+export function BriefSentence({ value, onChange, options, as: Tag = "p" }: { value: BriefValue; onChange: (v: BriefValue) => void; options: BriefOptions; as?: "p" | "h1" }) {
   const uid = useId();
   const [budgetText, setBudgetText] = useState(String(Math.round(value.budgetCents / 100)));
   const set = <K extends keyof BriefValue>(k: K, v: BriefValue[K]) => onChange({ ...value, [k]: v });
 
   return (
-    <p className="font-serif text-[clamp(1.5rem,1.1rem+1.8vw,2.4rem)] leading-[1.35]">
+    <Tag className="font-serif text-[clamp(1.5rem,1.1rem+1.8vw,2.4rem)] leading-[1.35]">
       I&rsquo;m launching{" "}
       <Slot label="Product" display={value.product} placeholder="a product">
         <label htmlFor={`${uid}-p`} className="mb-1.5 block font-sans text-small font-medium">
@@ -138,6 +138,6 @@ export function BriefSentence({ value, onChange, options }: { value: BriefValue;
         />
       </Slot>
       <Punct>.</Punct>
-    </p>
+    </Tag>
   );
 }
