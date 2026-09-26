@@ -1,0 +1,26 @@
+/* Design tokens — the ONLY place hex values and font stacks live. See design/BRIEF.md §3 for the measured contrast. */
+:root {
+  --paper: #f5f1ea;
+  --paper-2: #fbf8f3;
+  --ink: #15130f;
+  --muted: #6b655b; /* 5.1:1 on paper */
+  --line: #e3dccf; /* decoration only (1.2:1) */
+  --line-strong: #8a8377; /* control borders (3.3:1) */
+  --vermilion: #ff4b1f; /* FILLS ONLY, ink text on it (5.6:1). Never white on it. */
+  --vermilion-ink: #c2300a; /* small vermilion text/links on paper (5.0:1) */
+  --highlight: #ffd84d;
+  --green: #0e4b3a;
+
+  --ff-serif: var(--nf-serif), "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --ff-sans: var(--nf-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ff-mono: var(--nf-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 400ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --masthead-h: 3.5rem;
+  --ticker-h: 1.75rem;
+  --tabbar-h: 3.5rem;
+}

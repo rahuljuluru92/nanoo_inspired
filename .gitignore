@@ -8,3 +8,8 @@ node_modules/
 .DS_Store
 *.log
 !.agent-logs/*.log
+next-env.d.ts
+*.tsbuildinfo
+coverage/
+test-results/
+playwright-report/

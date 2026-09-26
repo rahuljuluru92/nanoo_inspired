@@ -12,31 +12,32 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 ---
 
 ## STATUS  _(update at the end of every phase/slice)_
-**Last updated:** 2026-09-26T06:06Z · **Current phase: 1 — Recon + spec + design brief (agent side done; waiting on the user's walkthrough)** · Clock started 2026-09-26T05:09Z
+**Last updated:** 2026-09-26T06:25Z · **Current phase: 2 — Design system + shell: DONE** · next is Phase 3 (needs the Supabase project) · Clock started 2026-09-26T05:09Z
 
 **Done**
-- **Phase 0:** capture hook (SessionStart / UserPromptSubmit / Stop) live; model id read from the transcript (D-026, replay-verified); first commit `55744cb` pushed to https://github.com/rahuljuluru92/nanoo_inspired (public); `CLAUDE.md`, `DECISIONS.md`, `CAPTURE-TEST.md`, `PLAN.md` committed.
-- **Phase 1 (agent side):** [SPEC.md](SPEC.md) (roles, golden path, screens, state machine, data model, RPCs, fit/projection/tracking/Wire/Receipt behaviour, sandbox creators, seed plan, acceptance criteria, open questions for the walkthrough) · [design/BRIEF.md](design/BRIEF.md) (principles, **anti-list**, measured-contrast tokens, type, shell, components, responsive matrix, motion, voice, a11y) · [recon/README.md](recon/README.md) (public-page findings + walkthrough kit). Decisions D-027 … D-041 logged.
-- Public-page recon of the reference product (desktop + mobile, `llms.txt`, `pricing.md`, register page). Help Center is only a contact page.
+- **Phase 0:** capture hook live (model id read from the transcript, D-026); repo `rahuljuluru92/nanoo_inspired` (public), first commit `55744cb` pushed.
+- **Phase 1 (agent side):** [SPEC.md](SPEC.md), [design/BRIEF.md](design/BRIEF.md), [recon/README.md](recon/README.md); decisions D-027 … D-041.
+- **Phase 2:** Next 16 + React 19 + Tailwind 4 scaffold; constrained theme + `tokens.css`; fonts; `Halftone` generator; 15 components (Button, Field, Chip, Stamp, Skeleton, EmptyState, Dateline, Modal/Sheet, Popover, Tabs, Toast, Table, CountUp, Sparkline, FitBar, RosterRow, BriefSentence, HoldButton, Tray, Ticker/WireItem, Receipt, RunOfShow, Masthead/BottomTabs/AppShell); `/styleguide` and a placeholder `/`; CI workflow. Decisions D-042 … D-050.
+- **Verified (D-049):** typecheck, lint, 9 unit tests, production build; no horizontal overflow at 320–1920; axe 0 violations at 1280 and 375; hold-to-commit via real pointer events + keyboard; sheet focus; 44 px targets.
 
 **In progress**
-- **User:** logged-in Naano walkthrough → `recon/brand|creator/` screenshots (cropped, no personal data/secrets) + `recon/NOTES.md` answering SPEC §12.
+- **User:** logged-in Naano walkthrough → `recon/brand|creator/` + `recon/NOTES.md` (SPEC §12).
 - Phase 0 tail: **canary 3** (fresh desktop session; first PROMPT must show `claude-sonnet-5`) → finalize `CAPTURE-TEST.md`.
 
 **Next**
-- Fold `recon/NOTES.md` into SPEC (log any changes). **Phase 2 can start now** — it depends on design/BRIEF.md, not on the walkthrough: scaffold Next.js + Tailwind, `tokens.css`, fonts, `Halftone`, components, masthead/ticker/tab-bar shell, `/styleguide` (verify at 4 widths + squint test). Walkthrough only affects Phase 3+ (schema/flows).
+- **Phase 3 — data foundation:** write `supabase/migrations` (schema, RLS, RPCs), `seed.sql` + `scripts/seed.ts`, SQL tests (ledger nets to 0, legal transitions, RLS per role) — all writable offline now. Applying them, auth, demo logins and the **first deploy** need the Supabase project + Vercel (see blockers). Fold `recon/NOTES.md` into SPEC when it lands.
 
 **Open blockers / awaiting the user**
-1. Naano logged-in walkthrough (in progress; the agent cannot sign up).
-2. Supabase project + Vercel account (after the walkthrough). Keys in `.env.local` only — **never in chat** (prompts are logged publicly).
+1. **Supabase project + Vercel account** — now the critical path for Phase 3's deploy. Keys in `.env.local` only, **never in chat**. (Also: Docker/local Postgres could let SQL be tested without a cloud project — say if you prefer that.)
+2. Naano logged-in walkthrough (agent cannot sign up).
 3. Canary 3 (above).
-4. Author handle: repo owner is `rahuljuluru92`, but log headers/commits use `rahuljuluru786` (D-008) — say if the hook should switch to `rahuljuluru92` for future logs.
-5. Confirm design direction (mockup) and the name "Byline"; say whether to enable AI brief parsing (needs an Anthropic key). Defaults in force: Byline, deterministic parsing, light theme.
-6. Push policy: push at the end of every phase? (Currently commits are local until asked.) Two sessions share the working tree — commit from one at a time (D-027).
+4. Author handle: repo owner is `rahuljuluru92`, logs/commits use `rahuljuluru786` (D-008) — switch for future logs?
+5. Confirm design direction + name "Byline"; AI brief parsing needs an Anthropic key (default: off). Defaults in force: Byline, deterministic parsing, light theme.
+6. **Push policy:** two local commits (Phase 1, Phase 2) are not pushed — push at the end of every phase? Two sessions share the working tree; commit from one at a time (D-027).
 
 ---
 
-## Concept## Concept — four nouns (use these words in UI **and** code)
+## Concept## Concept## Concept — four nouns (use these words in UI **and** code)
 > **Brief → Lineup → Wire → Receipt.** Brands write a **Brief**, assemble a **Lineup**, watch the **Wire**, keep a **Receipt**.
 > Creators get **Offers**, file a **Draft**, go **Live**, get **Paid**, and build a media kit of verified Receipts.
 
@@ -88,6 +89,7 @@ approve→payout · tracked links `/go/[code]` + real click events · Wire · Re
 - Cut order if tight: AI parsing → media-kit polish → run-of-show → API docs page → realtime pulse. **Never cut** Phases 4–6, the responsive pass, the landing live desk.
 - Pricing is a landing-page section, no plans (D-036) · `shortlist_requests` dropped (D-037) · no left rail (D-033) · no withdrawals, no dispute flow · creator stats self-reported/seeded and labelled (D-040) · sandbox creators reply automatically, clearly labelled (D-028).
 - _Add new simplifications here as they happen, and log them in DECISIONS.md._
+- Phase 2 simplifications: no tablet tray drawer (bottom sheet below 1024, D-045) · no stacked brief form (popover slots everywhere, D-046) · focus ring is a plain ink outline (D-048).
 - **Where PLAN.md is outdated** (left rail, Geist/Inter Tight, free-shortlist form, pricing page): CLAUDE.md, SPEC.md and design/BRIEF.md win.
 
 ## Phases
@@ -95,7 +97,7 @@ approve→payout · tracked links `/go/[code]` + real click events · Wire · Re
 |---|---|---|---|
 | 0 | Capture + accounts | 30–45 min | **done** except canary 3 (live confirmation of the model-id fix); repo + first commit pushed; Supabase/Vercel pending |
 | 1 | Recon + spec + design brief | 60–75 min | **agent side done** (SPEC, design brief, recon kit); user's logged-in walkthrough + `recon/NOTES.md` pending |
-| 2 | Design system + shell (`/styleguide`) | 90 min | not started |
+| 2 | Design system + shell (`/styleguide`) | 90 min | **done** (D-042 … D-050) |
 | 3 | Data foundation (migrations, RLS, RPCs, seed, auth, demo logins, **deployed**) | 90 min | not started |
 | 4 | Slice A — Brief → Lineup → Tray → hold-to-commit escrow | 150 min | not started |
 | 5 | Slice B — Creator side (mobile-first) | 120 min | not started |
@@ -109,8 +111,8 @@ brand approves → creator goes live with URL → payout releases → tracked li
 
 ---
 
-## Conventions _(planned — update to match reality when scaffolded in Phase 2/3)_
-**Stack:** Next.js App Router + TypeScript (strict) + Tailwind (theme mapped to CSS-variable tokens) + shadcn/Radix primitives fully re-tokenised ·
+## Conventions _(front end as built in Phase 2; database/API parts still planned)_
+**Stack (built):** Next.js 16 App Router (Turbopack) + React 19 + TypeScript 5.9 strict (`noUncheckedIndexedAccess`) + Tailwind 4 with a **constrained theme** (no default colours/shadows/radii; only tokens exist) · Radix Dialog/Popover/Tabs only; own Button/Field/Toast/icons/charts · ESLint 9 · Vitest (`*.test.ts` beside the code) ·
 Supabase (Postgres, Auth, RLS, Realtime, Storage) · Vercel · Playwright (e2e) · unit tests (pure logic: fit score, projection) · GitHub Actions CI (typecheck, lint, unit, build).
 
 **Folder structure**
@@ -121,10 +123,16 @@ design/BRIEF.md            visual + interaction rules (tokens, anti-list, compon
 recon/                     screenshots + notes from the logged-in Naano walkthrough (flows/data only)
 supabase/{migrations/, seed.sql, tests/}      SQL is the source of truth for the schema + RPCs
 src/app/(public)/ (brand)/ (creator)/         route groups · api/ · go/[code] · receipt/[code] · c/[handle]
-src/components/{ui,desk,wire,receipt,...}/    src/lib/{supabase,fit,projection,money,halftone,...}
+src/components/{ui,desk,wire,receipt,shell,art}/   built: primitives, desk (BriefSentence/RosterRow/Tray/HoldButton), wire, receipt (+RunOfShow), shell, art (Halftone/Wordmark)
+src/lib/                                      built: cn, money, time, halftone, types, use-reduced-motion · planned: supabase/, fit.ts, projection.ts
+src/app/styleguide/                           dev-only design-system page + fixtures (fictional data)
 src/styles/tokens.css                         design tokens (the only place hex values live)
 e2e/  .github/workflows/ci.yml
 ```
+
+**Commands:** `npm run dev` · `npm run typecheck` · `npm run lint` · `npm test` · `npm run build` (CI runs the last four).
+**Local preview (D-050):** the `web` launch config does not start in this environment. Run `node node_modules/next/dist/bin/next dev --port 3100` in the background, then `preview_start web-attached`.
+If `next dev` ever re-adds a boilerplate block to this file, `agentRules: false` in `next.config.ts` should prevent it (D-044).
 
 **Naming**
 - Files kebab-case; React components PascalCase exports; hooks `use-*.ts`; server actions in a co-located `actions.ts`.
@@ -136,7 +144,9 @@ e2e/  .github/workflows/ci.yml
 
 **Rules of the road**
 - State changes and money **only via RPCs**; RLS on every table; brands see only their campaigns, creators only their bookings, public sees only kits + receipts.
-- No hard-coded hex or font names in components — tokens only. No shadows heavier than a hairline, no gradients.
+- No hard-coded hex or font names in components — tokens only (enforced by the constrained Tailwind theme, D-043). No shadows, no smooth gradients.
+- Vermilion is a **fill** only, with ink text on it; small vermilion text uses `text-vermilion-ink`. Control borders are ink or `line-strong`, never vermilion or `line`.
+- Times: use `LocalTime` (client-only); day labels via `formatDay` (UTC) — never format a timestamp on the server for display (D-047).
 - Every list has an empty state; every async action has pending + error states; optimistic updates roll back on failure.
 - Commit per slice/phase, message `phaseN: subject` (or `sliceA: …`), **with `.agent-logs/`, CLAUDE.md and DECISIONS.md in the same commit**.
   Commit trailer: `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>`.

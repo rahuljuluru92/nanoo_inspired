@@ -12,7 +12,7 @@ warm printed-page trust for the words, terminal precision for the numbers. The p
 6. **Vocabulary is the interface.** Brief, Lineup, Wire, Receipt, Tray, Offer, Deal — used verbatim.
 
 ## 2. The anti-list (never — this is how we stay unlike Naano and unlike every AI-generated SaaS page)
-Sky/cloud imagery · frosted glass, blur, glow · gradients of any kind · blue as an accent · Inter / Inter Tight / Geist / Poppins · black pill buttons ·
+Sky/cloud imagery · frosted glass, blur, glow · smooth or decorative gradients (hard-stop hatching for skeletons is fine) · blue as an accent · Inter / Inter Tight / Geist / Poppins · black pill buttons ·
 photo-card grids · logo walls · big stat-tile rows (number-in-a-card) · testimonial-with-video blocks · floating AI prompt bars · purple-on-white "AI" look ·
 stock or AI-generated illustration · emoji as UI · left icon rail · drop shadows heavier than a hairline · rounded-2xl everywhere · carousel-of-LinkedIn-posts.
 **Squint test** (Phase 2 and 8): put a Byline screenshot beside a Naano one; a stranger must never confuse them at a glance (palette, type, layout, avatars, interaction model).
@@ -95,3 +95,14 @@ Newsroom wire copy and datelines · printed receipts and boarding passes · stoc
 
 ## 12. Phase 2 deliverables
 `tokens.css`, fonts, `Halftone` generator, the components above with states, masthead/ticker/tab-bar shell, `/styleguide` verified at four widths and passing the squint test.
+
+## 13. Phase 2 outcome (2026-09-26) — what was built, and where reality overrode this brief
+**Built:** tokens + constrained Tailwind theme, three fonts, the procedural halftone generator (unit-tested), 15 primitives and signature components, the masthead + Wire ticker + bottom-tab shell, and `/styleguide` with every component in its real states (see D-042 … D-050).
+**Measured:** no horizontal overflow at 320/375/768/1024/1280/1536/1920; axe-core 0 violations at 1280 and 375; hold-to-commit behaviour verified through real pointer events (early release cancels, full hold commits, Enter opens the confirm dialog); sheet focus and duplicate-ID fixes verified.
+**Deviations (the brief is otherwise unchanged; later sections should be read with these):**
+- No 768–1023 tray drawer: below 1024 it is a sticky peek bar + bottom sheet (D-045).
+- `BriefSentence` has no stacked-form fallback; popover slots work at every width (D-046).
+- Focus ring is a plain 2 px ink outline; HoldButton border is ink; over-budget rows are not dimmed (D-048).
+- Hard-stop hatching for skeletons is allowed under "no gradients".
+**Squint test (Phase 2, honest):** Naano = pale-blue cloud sky, frosted glass, Inter-like sans, black pills, photo cards, left icon rail, floating AI bar. Byline = warm paper, serif display + mono figures, vermilion-on-ink actions, hairline rules, generated halftone portraits, masthead + ticker, sentence-as-search. Palette, type, layout, avatars and interaction model all differ; a stranger would not confuse them. **Caveat:** this covers the design system, not yet a real product screen; repeat on the landing page (Phase 7) and the Desk (Phase 4).
+

@@ -255,3 +255,57 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** Keeps recon useful without leaking into visuals/copy (Never-touch list) or exposing private data.
 **Rejected:** Copying their screens as a design reference; committing raw screenshots.
 **Status:** Active. Walkthrough in progress by the user.
+
+### D-042 · 2026-09-26T06:25Z · Phase 2
+**Decision:** Toolchain: Next.js 16 (App Router, Turbopack) + React 19 + Tailwind 4 + **TypeScript 5.9 (pinned)** + **ESLint 9** flat config + Vitest. Only Radix Dialog, Popover and Tabs are dependencies; Button, Field, Toast, icons, charts and the halftone generator are our own.
+**Why:** Newest majors of TypeScript (7, native port) and ESLint (10) were resolved by npm but are not supported by Next's tooling yet; fewer dependencies keeps the look entirely ours and the bundle small.
+**Rejected:** shadcn/ui generator (default look, fights the anti-list); lucide-react (generic icon style); Recharts (bloat for two charts); TS 7 / ESLint 10.
+**Status:** Active. Amends D-002's stack line.
+
+### D-043 · 2026-09-26T06:25Z · Phase 2
+**Decision:** Tailwind theme is **constrained to our system**: default colours, radii, shadows and blur are reset, so only our tokens exist (`bg-paper`, `text-ink`, `border-line`…); `tokens.css` is the only place hex values and font stacks live (documented exceptions: `icon.svg` and the `themeColor` meta tag).
+**Why:** Makes off-system choices (a stray blue, a shadow) impossible by construction rather than by discipline — the anti-list becomes a build-time constraint.
+**Rejected:** Keeping the default palette and relying on review.
+**Status:** Active.
+
+### D-044 · 2026-09-26T06:25Z · Phase 2
+**Decision:** Set `agentRules: false` in `next.config.ts` and remove the block `next dev` appended to `CLAUDE.md`.
+**Why:** `next dev` (16.3) auto-generates its own boilerplate section inside CLAUDE.md on every run; that file is this project's source of truth and is committed, so tooling must not edit it. The option was verified to exist in the installed Next types before use.
+**Rejected:** Leaving the block in and committing it; deleting the block after every run.
+**Status:** Active. Nothing in that generated block was treated as project guidance.
+
+### D-045 · 2026-09-26T06:25Z · Phase 2
+**Decision:** Tray below 1024 px is a **sticky peek bar + bottom sheet**; there is no separate 768–1023 right-hand drawer. The peek bar is `sticky` (rides the viewport bottom only while the Desk is on screen), not `fixed`.
+**Why:** One mobile pattern to build and test; the fixed version hovered over unrelated content and left a gap at tablet widths where there is no tab bar.
+**Rejected:** A fixed peek bar; a dedicated tablet drawer.
+**Status:** Active. **Reverses** the "768–1023: slide-in drawer" row in design/BRIEF.md §5–§6.
+
+### D-046 · 2026-09-26T06:25Z · Phase 2
+**Decision:** `BriefSentence` uses popover slots at **every** width; the stacked-form fallback is dropped.
+**Why:** Tested at 320 and 375 px: the sentence wraps cleanly, slots are ≥44 px on touch, popovers are `min(92vw, 22rem)`. A second form would duplicate logic and IDs.
+**Rejected:** A separate stacked form under 768 px.
+**Status:** Active. **Reverses** the fallback line for `BriefSentence` in design/BRIEF.md §5.
+
+### D-047 · 2026-09-26T06:25Z · Phase 2
+**Decision:** Times are rendered **client-side only** (`LocalTime`, in the viewer's timezone, empty until mounted) and day labels are formatted in **UTC**.
+**Why:** Server and browser timezones differ, which produces hydration mismatches; `suppressHydrationWarning` would leave the server's wrong time on screen.
+**Rejected:** `suppressHydrationWarning`; formatting on the server.
+**Status:** Active.
+
+### D-048 · 2026-09-26T06:25Z · Phase 2
+**Decision:** Accessibility implementation choices: focus ring = 2 px ink outline, 2 px offset (the vermilion inner ring in BRIEF §3 is dropped); HoldButton border is **ink** (a vermilion border is 2.97:1); over-budget roster rows keep full contrast and say "€X over" instead of being dimmed; sheets focus themselves on open rather than the first control (which can be a destructive Remove); per-instance IDs via `useId`; the tray is a `section`, not an `aside`.
+**Why:** Each was found by measurement or an axe finding, not taste: dimming and vermilion borders fail contrast; auto-focusing Remove invites accidental deletion; duplicate IDs and a nested landmark are axe violations.
+**Rejected:** Dimmed rows; vermilion borders; Radix default autofocus.
+**Status:** Active. Simplifies design/BRIEF.md §3 and §5 where they differ.
+
+### D-049 · 2026-09-26T06:25Z · Phase 2
+**Decision:** Verification is measured, and becomes e2e assertions in Phase 8: horizontal overflow checked by script at 320/375/768/1024/1280/1536/1920 (all clean); axe-core 4.10.2 (WCAG 2.0/2.1/2.2 A+AA + best-practice) run at 1280 and 375 (0 violations; 1 "incomplete" contrast check on a textarea partly covered by the sticky masthead, colours known good); touch targets audited (≥44 px except deliberate 36 px `sm` buttons in dense rows).
+**Why:** "Not clumsy" is a claim that needs numbers; scripts are repeatable in CI later.
+**Rejected:** Eyeballing screenshots only.
+**Status:** Active.
+
+### D-050 · 2026-09-26T06:25Z · Phase 2
+**Decision:** Local preview: the `web` launch config (`npm run dev`) starts nothing in this environment (no PATH), so run `node node_modules/next/dist/bin/next dev --port 3100` in the background and open it with the `web-attached` preview config.
+**Why:** Found by trial; recorded so no future session loses time.
+**Rejected:** Trying to fix the sandbox PATH.
+**Status:** Active.
