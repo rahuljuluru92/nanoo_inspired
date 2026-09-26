@@ -106,3 +106,16 @@ Newsroom wire copy and datelines · printed receipts and boarding passes · stoc
 - Hard-stop hatching for skeletons is allowed under "no gradients".
 **Squint test (Phase 2, honest):** Naano = pale-blue cloud sky, frosted glass, Inter-like sans, black pills, photo cards, left icon rail, floating AI bar. Byline = warm paper, serif display + mono figures, vermilion-on-ink actions, hairline rules, generated halftone portraits, masthead + ticker, sentence-as-search. Palette, type, layout, avatars and interaction model all differ; a stranger would not confuse them. **Caveat:** this covers the design system, not yet a real product screen; repeat on the landing page (Phase 7) and the Desk (Phase 4).
 
+## 14. Phase 7 outcome — the squint test on real product screens (2026-09-26)
+**Screens compared:** Byline's landing page and desk against Naano's home page and marketplace preview.
+| | Naano | Byline |
+|---|---|---|
+| Ground | pale-blue cloud sky, frosted-glass cards | warm paper, hairline rules, no glass |
+| Type | bold tight Inter-style sans | serif display with an italic turn, mono figures |
+| Hero | headline + CTA over sky, logo wall | headline + **the working product** (sentence → ranked lineup) |
+| Creators | photo cards with a matching bar | roster rows with generated halftone portraits and reasoned fit |
+| Proof | video testimonial, stat tiles, post carousel | a **real Receipt** with what it can and cannot vouch for |
+| Pricing | plan cards | a three-line definition list, and "free while we test" |
+| Interaction | floating AI prompt bar | the brief sentence is the search |
+**Result:** a stranger would not confuse them at a glance, at a squint, or by structure. Shared conventions (an accordion FAQ, a pricing section, a primary/secondary CTA pair) are universal patterns, executed differently. The earlier caveat (D-… "design system only") is now closed for the landing page and the desk.
+

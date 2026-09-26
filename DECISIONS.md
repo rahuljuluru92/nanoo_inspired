@@ -513,3 +513,33 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** The whole product claim is this loop; it deserves an end-to-end proof rather than piecemeal checks.
 **Rejected:** Trusting per-slice tests only.
 **Status:** Active. To become a Playwright test in Phase 8.
+
+### D-085 · 2026-09-26T12:47Z · Phase 7
+**Decision:** **The landing page's hero is the product.** A visitor writes a brief and a ranked lineup of real creators appears, from the public API and the real database, with no account. The first ranking is rendered on the server (nothing flashes empty); edits are debounced (250 ms), cancel the previous request, and show a status line, an error state with retry, and keep the last good lineup if a refresh fails. Below it: the four nouns with tiny live visuals, a **real** Receipt (paid, most unique clicks) as proof, creators, pricing, FAQ. If the database is down the page still renders and the live desk explains itself.
+**Why:** Time-to-value before sign-up, and a first impression that is itself a demonstration of the real backend, replacing Naano's 48-hour human shortlist form (D-016).
+**Rejected:** A static hero with a marketing mock; a logo wall or testimonial block; an email-gated shortlist.
+**Status:** Active. Verified: three rapid edits produced one request and re-ranked the list; axe 0 violations at 375 and 1440.
+
+### D-086 · 2026-09-26T12:47Z · Phase 7
+**Decision:** **A brief travels.** `lib/brief-params` parses and serialises a brief in a URL (taxonomy-filtered, capped, budget in whole euros; 6 tests). "Book this lineup" links to `/login?next=/desk?…`; the demo login and registration honour a same-site `next`; the desk arrives pre-filled and drops the "example brief" hint.
+**Why:** The visitor's work is never thrown away between the landing page and the product.
+**Rejected:** Storing the brief in a cookie or in browser storage (invisible, breaks across devices and shared links).
+**Status:** Active. Completes the URL-brief hook planned in D-065. Verified end to end in the browser.
+
+### D-087 · 2026-09-26T12:47Z · Phase 7
+**Decision:** **Public read API**: `GET /api/lineup` and `GET /api/creators/{handle}`, CORS-open, `Cache-Control: public, s-maxage=30, stale-while-revalidate=120`, throttled at 60 requests a minute per IP (verified: 60 × 200 then 429, other clients unaffected), errors as JSON with a stable code. Response shapes live in `lib/api-shapes.ts` and are shared with `/developers`, whose examples are produced by the same code. **The `budget` parameter is whole euros** (SPEC §8 said cents; amended).
+**Why:** The landing page dogfoods it, so it is real and cannot rot; docs generated from the code cannot drift.
+**Rejected:** Hand-written docs; an authenticated API; a GraphQL layer.
+**Status:** Active.
+
+### D-088 · 2026-09-26T12:47Z · Phase 7
+**Decision:** Landing voice and structure: a front page, not a SaaS template. Ruled sections instead of cards, a serif display type with one italic turn, mono datelines with real numbers from the database, a definition-list pricing block, an accordion FAQ whose answers include what is **not** built. All copy is original.
+**Why:** Distinctness is part of the brief (D-014) and honesty is the product's whole stance.
+**Rejected:** Card grids, gradient sections, a logo wall, stat tiles, video testimonial, floating AI bar (the anti-list).
+**Status:** Active.
+
+### D-089 · 2026-09-26T12:47Z · Phase 7
+**Decision:** `robots.ts` indexes the landing page, `/developers` and creator kits (`/c/`) and disallows the app, Receipts, `/go/`, `/api/` and the styleguide; `sitemap.ts` lists creator kits from the database and never fails the request.
+**Why:** Kits are public shop windows; Receipts are unlisted by design (D-038) and must stay out of search.
+**Rejected:** Indexing everything; no robots file.
+**Status:** Active. Needs `NEXT_PUBLIC_SITE_URL` once deployed.

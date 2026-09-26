@@ -10,6 +10,7 @@ decisions in [DECISIONS.md](DECISIONS.md); visual rules in [design/BRIEF.md](des
 > **Amendments made in Phase 3 (the build overrides the text below where they differ; see DECISIONS D-051 … D-061):**
 > - The database is **portable Postgres** in `db/` (not Supabase). Accounts and sessions are app-owned (`accounts`, `sessions`); `profiles` does not exist. Supabase Realtime is replaced by polling (§7.5).
 > - RLS is enforced per request with `SET LOCAL ROLE byline_user` + `app.user_id`; users read through definer views (`public_creators`, `my_offers`, `wire_events`, `booking_metrics`, `public_receipts`).
+> - **Phase 7:** `/api/lineup` takes `budget` in whole euros (not cents); the landing live desk and `/developers` use the same shape code; a brief can travel in a URL (`lib/brief-params`).
 > - **Phase 5–6:** creator RPCs `save_creator_profile` and `save_draft`; `set_receipt_public`; the Wire carries human clicks in 5-minute buckets (last 7 days); Receipts label the impressions source; `/go/[code]` is a route handler (302 first, click recorded after).
 > - Extra RPCs: `create_account` and `link_lookup` / `record_click` (owner-only). `/go/[code]` uses `link_lookup` then `record_click`. `bookings` gains `auto_at`. `shortlist_requests` does not exist (D-037).
 
