@@ -14,7 +14,7 @@ export default async function Onboarding() {
   const has = await asUser(s.accountId, async (c) => (await c.query("select 1 from creators")).rowCount ?? 0);
   if (has) redirect("/offers");
   return (
-    <main className="mx-auto min-h-dvh max-w-2xl px-6 py-10">
+    <main id="main" className="mx-auto min-h-dvh max-w-2xl px-6 py-10">
       <Wordmark />
       <Dateline className="mt-10">Creator desk · step 1 of 1</Dateline>
       <h1 className="mt-1 text-display">Set up your media kit.</h1>

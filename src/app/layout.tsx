@@ -24,6 +24,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={cn(serif.variable, sans.variable, mono.variable)}>
       <body>
+        {/* First stop for keyboard and screen-reader users on every page; each page's <main> carries id="main". */}
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[70] focus:border focus:border-ink focus:bg-paper-2 focus:px-3 focus:py-2">
+          Skip to content
+        </a>
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

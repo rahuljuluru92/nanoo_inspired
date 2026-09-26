@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { Icon } from "./icon";
 
@@ -9,7 +9,24 @@ const overlay = "fixed inset-0 z-40 bg-ink/40 data-[state=open]:animate-fade-in"
 const closeBtn =
   "absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-sm border border-transparent hover:border-ink";
 
-/** Centred dialog for confirmations. Focus is trapped and restored by Radix; Esc closes. */
+/**
+ * Radix returns focus to the dialog's Trigger, and these dialogs are opened from state (a hold button, a table row), so they have none:
+ * focus fell to <body> on close. This remembers what had focus when the dialog opened and gives it back.
+ */
+function useReturnFocus() {
+  const opener = useRef<HTMLElement | null>(null);
+  return {
+    remember: () => {
+      opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    },
+    onCloseAutoFocus: (e: Event) => {
+      e.preventDefault();
+      if (opener.current?.isConnected) opener.current.focus();
+    },
+  };
+}
+
+/** Centred dialog for confirmations. Focus is trapped by Radix, returned by us; Esc closes. */
 export function Modal({
   open,
   onOpenChange,
@@ -23,11 +40,14 @@ export function Modal({
   description?: string;
   children: ReactNode;
 }) {
+  const back = useReturnFocus();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className={overlay} />
         <Dialog.Content
+          onOpenAutoFocus={back.remember}
+          onCloseAutoFocus={back.onCloseAutoFocus}
           className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,30rem)] -translate-x-1/2 -translate-y-1/2 border border-ink bg-paper-2 p-6 data-[state=open]:animate-fade-in"
           {...(description ? {} : { "aria-describedby": undefined })}
         >
@@ -57,6 +77,7 @@ export function Sheet({
   side?: "bottom" | "right";
   children: ReactNode;
 }) {
+  const back = useReturnFocus();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -65,10 +86,12 @@ export function Sheet({
           aria-describedby={undefined}
           tabIndex={-1}
           onOpenAutoFocus={(e) => {
+            back.remember();
             // Radix would focus the first control, which can be a destructive "remove" button. Focus the sheet instead.
             e.preventDefault();
             (e.currentTarget as HTMLElement).focus();
           }}
+          onCloseAutoFocus={back.onCloseAutoFocus}
           className={cn(
             "fixed z-50 flex flex-col overflow-y-auto border-ink bg-paper-2 outline-none",
             side === "bottom" &&

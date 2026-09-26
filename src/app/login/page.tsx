@@ -16,7 +16,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   if (session) redirect(safeNext(next, homeFor(session.role)));
 
   return (
-    <main className="mx-auto grid min-h-dvh max-w-5xl content-center gap-12 px-6 py-10 lg:grid-cols-[1fr_1fr] lg:gap-0">
+    <main id="main" className="mx-auto grid min-h-dvh max-w-5xl content-center gap-12 px-6 py-10 lg:grid-cols-[1fr_1fr] lg:gap-0">
       <section aria-labelledby="signin" className="lg:pr-14">
         <Wordmark />
         <Dateline className="mt-10">Sign in</Dateline>

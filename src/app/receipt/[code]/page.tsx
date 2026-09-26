@@ -19,7 +19,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ code: 
   if (!r) notFound();
   const data = toReceiptData(r);
   return (
-    <main className="mx-auto min-h-dvh max-w-3xl px-4 pb-20 pt-6 sm:px-6">
+    <main id="main" className="mx-auto min-h-dvh max-w-3xl px-4 pb-20 pt-6 sm:px-6">
       <header className="flex items-center justify-between border-b border-ink pb-2 print:hidden">
         <Wordmark />
         <Link href={`/c/${r.handle}`} className="inline-flex min-h-11 items-center text-small underline decoration-line-strong underline-offset-4 hover:decoration-ink">

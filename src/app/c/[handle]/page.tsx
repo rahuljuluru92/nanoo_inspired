@@ -49,7 +49,7 @@ export default async function PublicKit({ params }: { params: Promise<{ handle: 
   const proj = projectClicks(kit.imp_p25, kit.imp_p50, kit.imp_p75, Number(kit.ctr_p50));
 
   return (
-    <main className="mx-auto min-h-dvh max-w-4xl px-4 pb-20 pt-6 sm:px-6">
+    <main id="main" className="mx-auto min-h-dvh max-w-4xl px-4 pb-20 pt-6 sm:px-6">
       <header className="flex items-center justify-between border-b border-ink pb-2">
         <Wordmark />
         <Link href="/login" className="inline-flex min-h-11 items-center text-small underline decoration-line-strong underline-offset-4 hover:decoration-ink">

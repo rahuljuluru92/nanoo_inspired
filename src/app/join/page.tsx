@@ -13,7 +13,7 @@ export default async function JoinPage({ searchParams }: { searchParams: Promise
   const session = await getSession();
   if (session) redirect(homeFor(session.role));
   return (
-    <main className="mx-auto min-h-dvh max-w-2xl px-6 py-10">
+    <main id="main" className="mx-auto min-h-dvh max-w-2xl px-6 py-10">
       <Wordmark />
       <Dateline className="mt-10">Join Byline</Dateline>
       <h1 className="mt-1 text-display">Pick your desk.</h1>
