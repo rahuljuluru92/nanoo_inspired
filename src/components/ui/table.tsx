@@ -1,10 +1,13 @@
 import type { HTMLAttributes, ReactNode, TdHTMLAttributes, ThHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-/** Hairline-ruled table. Wrap in a scroll container so wide tables never break the page on phones. */
+/**
+ * Hairline-ruled table inside its own scroll region, so wide tables never break the page on phones.
+ * The region is `relative` on purpose: `sr-only` text is absolutely positioned and would otherwise escape the clip and widen the page.
+ */
 export function Table({ children, caption, className }: { children: ReactNode; caption?: string; className?: string }) {
   return (
-    <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={caption ?? "Table"}>
+    <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label={caption ?? "Table"}>
       <table className={cn("w-full border-collapse text-small", className)}>
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         {children}

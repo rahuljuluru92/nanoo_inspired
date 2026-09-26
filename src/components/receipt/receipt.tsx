@@ -13,6 +13,8 @@ export interface ReceiptData {
   postUrl: string;
   /** Creator-reported; null when not yet reported. */
   impressions: number | null;
+  /** who says so: the creator, or simulated by a sandbox creator */
+  impressionsSource?: "self_reported" | "seeded";
   clicksTotal: number;
   clicksUnique: number;
   feeCents: number;
@@ -20,10 +22,10 @@ export interface ReceiptData {
 }
 
 /** Printed-style proof of a post. Says exactly what is verified (clicks) and what is self-reported (impressions). */
-export function Receipt({ data }: { data: ReceiptData }) {
+export function Receipt({ data, as: Title = "h2" }: { data: ReceiptData; as?: "h1" | "h2" | "h3" }) {
   const cpc = costPerClickCents(data.feeCents, data.clicksUnique);
   const rows: [string, string, boolean?][] = [
-    ["Impressions (self-reported)", data.impressions === null ? "not reported" : data.impressions.toLocaleString("en-IE")],
+    [data.impressionsSource === "seeded" ? "Impressions (sandbox, simulated)" : "Impressions (self-reported)", data.impressions === null ? "not reported" : data.impressions.toLocaleString("en-IE")],
     ["Tracked clicks · unique", data.clicksUnique.toLocaleString("en-IE")],
     ["Tracked clicks · total", data.clicksTotal.toLocaleString("en-IE")],
     ["Fee", formatEUR(data.feeCents)],
@@ -36,7 +38,7 @@ export function Receipt({ data }: { data: ReceiptData }) {
         <Dateline>Receipt · post {data.number}</Dateline>
         <Chip tone="green">Verified by redirect</Chip>
       </div>
-      <h2 className="mt-3 text-display">{data.creatorName}, live {formatDay(data.liveAt)}</h2>
+      <Title className="mt-3 text-display">{data.creatorName}, live {formatDay(data.liveAt)}</Title>
       <p className="mt-1 text-small text-muted">
         for {data.brandName} · {data.campaign}
       </p>
