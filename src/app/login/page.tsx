@@ -26,7 +26,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <LoginForm next={next} />
         <p className="mt-6 text-small text-muted">
           New here?{" "}
-          <Link href="/join" className="text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">
+          <Link href={next ? `/join?next=${encodeURIComponent(next)}` : "/join"} className="text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">
             Join Byline
           </Link>
         </p>
@@ -41,12 +41,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           Two shared accounts with fictional data: a brand with a campaign in every state, and a creator with offers waiting. Anyone can use them, so things may already have moved. Reset from the account menu whenever you like.
         </p>
         <div className="mt-8 grid gap-3 sm:max-w-sm">
-          <form action={demoLoginAction.bind(null, "brand")}>
+          <form action={demoLoginAction.bind(null, "brand", next ?? "")}>
             <SubmitButton variant="primary" className="w-full">
               Enter as the demo brand
             </SubmitButton>
           </form>
-          <form action={demoLoginAction.bind(null, "creator")}>
+          <form action={demoLoginAction.bind(null, "creator", next ?? "")}>
             <SubmitButton variant="secondary" className="w-full">
               Enter as the demo creator
             </SubmitButton>

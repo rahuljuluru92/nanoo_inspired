@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Halftone } from "@/components/art/halftone";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
@@ -14,23 +15,33 @@ import { FitBar } from "./fit-bar";
  */
 export function RosterRow({
   creator,
-  selected,
+  selected = false,
   overBudgetCents = 0,
   onToggle,
+  href,
 }: {
   creator: LineupCreator;
-  selected: boolean;
+  selected?: boolean;
   overBudgetCents?: number;
-  onToggle: () => void;
+  /** Omit for a read-only preview row (no add button), e.g. on the landing page. */
+  onToggle?: () => void;
+  /** Makes the name a link (the creator's public kit). */
+  href?: string;
 }) {
   const { name, headline, handle, why, fit, rateCents, projection, isSandbox } = creator;
   return (
     <li className={cn("@container border-t border-line", selected && "bg-highlight/30")}>
-      <div className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2 px-2 py-3 @xl:grid-cols-[3.25rem_minmax(0,1fr)_9rem_6.5rem_7.5rem_2.75rem] @xl:items-center">
+      <div className={cn("grid grid-cols-[3rem_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2 px-2 py-3 @xl:items-center", onToggle ? "@xl:grid-cols-[3.25rem_minmax(0,1fr)_9rem_6.5rem_7.5rem_2.75rem]" : "@xl:grid-cols-[3.25rem_minmax(0,1fr)_9rem_6.5rem_7.5rem]")}>
         <Halftone seed={handle} size={48} />
         <div className="min-w-0">
           <p className="font-serif text-[1.25rem] leading-tight">
-            {name}
+            {href ? (
+              <Link href={href} className="underline-offset-4 hover:underline">
+                {name}
+              </Link>
+            ) : (
+              name
+            )}
             {isSandbox ? <span className="ml-2 align-middle font-mono text-caption text-muted">sandbox</span> : null}
           </p>
           <p className="truncate text-small text-muted">{headline}</p>
@@ -51,18 +62,20 @@ export function RosterRow({
             <p className="text-caption text-muted">est. clicks</p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-pressed={selected}
-          aria-label={`${selected ? "Remove" : "Add"} ${name} ${selected ? "from" : "to"} lineup`}
-          className={cn(
-            "col-start-3 row-start-1 inline-flex size-11 items-center justify-center rounded-sm border border-ink transition-colors duration-[var(--dur-1)] @xl:col-start-auto @xl:row-start-auto",
-            selected ? "bg-ink text-paper" : "bg-transparent text-ink hover:bg-ink hover:text-paper",
-          )}
-        >
-          <Icon name={selected ? "check" : "plus"} />
-        </button>
+        {onToggle ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-pressed={selected}
+            aria-label={`${selected ? "Remove" : "Add"} ${name} ${selected ? "from" : "to"} lineup`}
+            className={cn(
+              "col-start-3 row-start-1 inline-flex size-11 items-center justify-center rounded-sm border border-ink transition-colors duration-[var(--dur-1)] @xl:col-start-auto @xl:row-start-auto",
+              selected ? "bg-ink text-paper" : "bg-transparent text-ink hover:bg-ink hover:text-paper",
+            )}
+          >
+            <Icon name={selected ? "check" : "plus"} />
+          </button>
+        ) : null}
       </div>
     </li>
   );

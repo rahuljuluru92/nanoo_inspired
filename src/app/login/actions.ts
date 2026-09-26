@@ -35,13 +35,13 @@ export async function loginAction(_prev: FormState, form: FormData): Promise<For
   redirect(safeNext(str(form, "next"), homeFor(account.role)));
 }
 
-/** One click into a shared demo account. The password is public by design (fictional data, resettable). */
-export async function demoLoginAction(role: Role): Promise<void> {
+/** One click into a shared demo account. The password is public by design (fictional data, resettable). `next` is honoured (same-site paths only). */
+export async function demoLoginAction(role: Role, next: string): Promise<void> {
   if (!allow(`demo:${await clientKey()}`, 30, 10 * 60_000)) redirect("/login");
   const account = await authenticate(role === "brand" ? DEMO_BRAND_EMAIL : DEMO_CREATOR_EMAIL, DEMO_PASSWORD);
   if (!account) redirect("/login");
   await startSession(account.id);
-  redirect(homeFor(role));
+  redirect(safeNext(next, homeFor(role)));
 }
 
 export async function logoutAction(): Promise<void> {
@@ -75,5 +75,5 @@ export async function registerAction(_prev: FormState, form: FormData): Promise<
   } catch (e) {
     return { error: toAppError(e).message, values };
   }
-  redirect(role === "brand" ? "/desk" : "/onboarding");
+  redirect(role === "brand" ? safeNext(str(form, "next"), "/desk") : "/onboarding");
 }

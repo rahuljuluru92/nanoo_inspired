@@ -11,11 +11,12 @@ const DOORS = [
   { value: "creator", title: "I’m a creator", body: "Get offers at your own price and build a media kit of receipts." },
 ] as const;
 
-export function JoinForm() {
+export function JoinForm({ next, defaultRole = "brand" }: { next?: string; defaultRole?: "brand" | "creator" }) {
   const [state, action] = useActionState<FormState, FormData>(registerAction, {});
-  const [role, setRole] = useState<string>(state.values?.role ?? "brand");
+  const [role, setRole] = useState<string>(state.values?.role ?? defaultRole);
   return (
     <form action={action} className="mt-8 grid gap-6" noValidate>
+      {next ? <input type="hidden" name="next" value={next} /> : null}
       <fieldset>
         <legend className="mb-2 text-small font-medium">Which desk are you joining?</legend>
         <div className="grid gap-3 sm:grid-cols-2">

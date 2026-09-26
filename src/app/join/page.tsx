@@ -8,7 +8,8 @@ import { JoinForm } from "./join-form";
 
 export const metadata: Metadata = { title: "Join" };
 
-export default async function JoinPage() {
+export default async function JoinPage({ searchParams }: { searchParams: Promise<{ next?: string; role?: string }> }) {
+  const { next, role } = await searchParams;
   const session = await getSession();
   if (session) redirect(homeFor(session.role));
   return (
@@ -16,10 +17,10 @@ export default async function JoinPage() {
       <Wordmark />
       <Dateline className="mt-10">Join Byline</Dateline>
       <h1 className="mt-1 text-display">Pick your desk.</h1>
-      <JoinForm />
+      <JoinForm next={next} defaultRole={role === "creator" ? "creator" : "brand"} />
       <p className="mt-8 text-small text-muted">
         Already have an account?{" "}
-        <Link href="/login" className="text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">
+        <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">
           Sign in
         </Link>
       </p>
