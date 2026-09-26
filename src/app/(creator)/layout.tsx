@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { AutoRefresh } from "@/components/ui/auto-refresh";
 import { AppShell, CREATOR_NAV } from "@/components/shell/app-shell";
 import { requireRole } from "@/lib/auth";
 import { creatorChrome } from "@/lib/queries/chrome";
@@ -10,6 +11,8 @@ export default async function CreatorLayout({ children }: { children: ReactNode 
   if (!chrome.hasProfile) redirect("/onboarding");
   return (
     <AppShell nav={CREATOR_NAV} figures={chrome.figures} wire={chrome.wire} unread={chrome.unread} notifications={chrome.notifications} account={{ name: s.displayName, email: s.email, role: "creator", isDemo: s.isDemo }}>
+      {/* keeps the Wire ticker and the bell alive on every page (pages that poll faster do their own) */}
+      <AutoRefresh everyMs={20000} />
       {children}
     </AppShell>
   );

@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 
 /** A read-only value with a Copy button. Falls back to selecting the text if the clipboard API is unavailable. */
 export function CopyField({ path, label }: { path: string; label: string }) {
-  const [origin, setOrigin] = useState("");
+  // The site address is only known in the browser: read it without an effect (empty on the server and during hydration).
+  const origin = useSyncExternalStore(
+    () => () => {},
+    () => window.location.origin,
+    () => "",
+  );
   const [copied, setCopied] = useState(false);
   const input = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setOrigin(window.location.origin));
-    return () => cancelAnimationFrame(id);
-  }, []);
   const value = `${origin}${path}`;
   async function copy() {
     try {

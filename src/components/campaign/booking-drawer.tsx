@@ -113,8 +113,8 @@ export function BookingDrawer({ booking, onClose }: { booking: BookingView | nul
           <section aria-label="Results" className={b.status === "live" ? "border border-ink bg-paper-2 p-4" : "border border-line-strong p-4"}>
             <h3 className="font-serif text-title">{b.status === "live" ? "Live now" : "Paid"}</h3>
             {b.postUrl ? (
-              <p className="mt-1 break-all text-caption">
-                <a href={b.postUrl} className="underline decoration-line-strong underline-offset-4 hover:decoration-ink" target="_blank" rel="noreferrer">
+              <p className="break-all text-caption">
+                <a href={b.postUrl} className="inline-block py-3.5 underline decoration-line-strong underline-offset-4 hover:decoration-ink" target="_blank" rel="noreferrer">
                   {b.postUrl}
                 </a>
               </p>
