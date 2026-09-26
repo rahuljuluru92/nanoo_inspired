@@ -29,27 +29,19 @@ export function JoinForm() {
         </div>
       </fieldset>
 
-      {role === "creator" ? (
-        <p className="border border-line-strong p-4 text-small">Creator sign-up opens in the next release. You can already explore the creator side with the demo account on the sign-in page.</p>
-      ) : (
-        <>
-          <Field label="Your name">{(p) => <Input name="name" autoComplete="name" defaultValue={state.values?.name} {...p} />}</Field>
-          <Field label="Company">{(p) => <Input name="company" autoComplete="organization" defaultValue={state.values?.company} {...p} />}</Field>
-          <Field label="Work email">{(p) => <Input type="email" name="email" autoComplete="email" defaultValue={state.values?.email} {...p} />}</Field>
-          <Field label="Password" hint="At least 8 characters.">{(p) => <Input type="password" name="password" autoComplete="new-password" {...p} />}</Field>
-        </>
-      )}
+      <Field label="Your name">{(p) => <Input name="name" autoComplete="name" defaultValue={state.values?.name} {...p} />}</Field>
+      {role === "brand" ? <Field label="Company">{(p) => <Input name="company" autoComplete="organization" defaultValue={state.values?.company} {...p} />}</Field> : null}
+      <Field label={role === "brand" ? "Work email" : "Email"}>{(p) => <Input type="email" name="email" autoComplete="email" defaultValue={state.values?.email} {...p} />}</Field>
+      <Field label="Password" hint="At least 8 characters.">{(p) => <Input type="password" name="password" autoComplete="new-password" {...p} />}</Field>
 
       {state.error ? (
         <p role="alert" className="border border-vermilion-ink px-3 py-2 text-small">
           {state.error}
         </p>
       ) : null}
-      {role === "brand" ? (
-        <SubmitButton variant="primary" className="w-full sm:w-auto">
-          Create my desk
-        </SubmitButton>
-      ) : null}
+      <SubmitButton variant="primary" className="w-full sm:w-auto">
+        {role === "brand" ? "Create my desk" : "Continue to my kit"}
+      </SubmitButton>
     </form>
   );
 }

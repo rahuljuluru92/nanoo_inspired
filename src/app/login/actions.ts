@@ -58,23 +58,22 @@ export async function resetDemoAction(): Promise<void> {
 }
 
 export async function registerAction(_prev: FormState, form: FormData): Promise<FormState> {
-  const role = str(form, "role");
+  const role = str(form, "role") === "creator" ? "creator" : "brand";
   const values = { role, name: str(form, "name"), email: str(form, "email"), company: str(form, "company") };
   const password = String(form.get("password") ?? "");
-  if (role !== "brand") return { error: "Creator sign-up opens in the next release. Try the demo creator in the meantime.", values };
   if (!values.name) return { error: "Enter your name.", values };
-  if (!values.company) return { error: "Enter your company name.", values };
+  if (role === "brand" && !values.company) return { error: "Enter your company name.", values };
   if (password.length < 8) return { error: "Choose a password of at least 8 characters.", values };
   if (!allow(`join:${await clientKey()}`, 10, 60 * 60_000)) return { error: "Too many sign-ups from this network. Try again later.", values };
   try {
     const id = await asOwner(async (c) => {
       const hash = await hashPassword(password);
-      const r = await c.query<{ id: string }>("select create_account($1, $2, 'brand', $3, $4) as id", [values.email, hash, values.name, values.company]);
+      const r = await c.query<{ id: string }>("select create_account($1, $2, $3, $4, $5) as id", [values.email, hash, role, values.name, role === "brand" ? values.company : null]);
       return r.rows[0]!.id;
     });
     await startSession(id);
   } catch (e) {
     return { error: toAppError(e).message, values };
   }
-  redirect("/desk");
+  redirect(role === "brand" ? "/desk" : "/onboarding");
 }

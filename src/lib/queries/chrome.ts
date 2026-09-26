@@ -9,6 +9,8 @@ export interface Chrome {
   figures: Figure[];
   wire: WireEvent[];
   unread: number;
+  /** creators only: false until they have finished onboarding */
+  hasProfile?: boolean;
 }
 
 interface WireRow {
@@ -50,6 +52,7 @@ export async function creatorChrome(userId: string): Promise<Chrome> {
       figures: m ? [{ label: "Balance", value: formatEUR(m.balance_cents) }] : [],
       wire: feed.rows.map(toWire),
       unread: Number(unread.rows[0]?.n ?? 0),
+      hasProfile: Boolean(m),
     };
   });
 }

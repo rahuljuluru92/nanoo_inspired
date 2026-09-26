@@ -33,6 +33,18 @@ const MESSAGES: Record<string, string> = {
   email_taken: "That email already has an account. Sign in instead.",
   invalid_email: "Enter a valid email address.",
   company_required: "Enter your company name.",
+  invalid_name: "Enter your name (up to 80 characters).",
+  invalid_handle: "Your handle is 3 to 40 characters: lowercase letters, numbers and hyphens.",
+  handle_taken: "That handle is taken. Try another.",
+  invalid_headline: "Describe what you write about in 5 to 120 characters.",
+  bio_too_long: "Keep the bio under 600 characters.",
+  invalid_rate: "Your rate per post is between €20 and €5,000.",
+  invalid_followers: "Enter your follower count.",
+  invalid_verticals: "Pick one to three verticals.",
+  invalid_impressions: "Enter a number of impressions, or leave it blank.",
+  invalid_audience: "Audience shares must be between 0 and 100 percent.",
+  draft_too_long: "Drafts can be up to 5,000 characters.",
+  invalid_stats: "Enter your impressions as a number.",
 };
 
 /** Turn a Postgres error raised by one of our RPCs into something safe to show. Unknown errors never leak details. */
