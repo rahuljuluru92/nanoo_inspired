@@ -7,6 +7,7 @@ import { Icon, type IconName } from "@/components/ui/icon";
 import { Ticker } from "@/components/wire/ticker";
 import { cn } from "@/lib/cn";
 import { AccountMenu, type AccountInfo } from "./account-menu";
+import { NotificationsMenu, type NotificationItem } from "./notifications-menu";
 import type { WireEvent } from "@/lib/types";
 
 export interface NavItem {
@@ -21,7 +22,7 @@ export interface Figure {
 }
 
 /** Top masthead (wordmark · nav · figures · bell) with the Wire ticker strip beneath it. No left rail. */
-export function Masthead({ nav, figures = [], wire, unread = 0, account }: { nav: NavItem[]; figures?: Figure[]; wire: WireEvent[]; unread?: number; account?: AccountInfo }) {
+export function Masthead({ nav, figures = [], wire, unread = 0, account, notifications }: { nav: NavItem[]; figures?: Figure[]; wire: WireEvent[]; unread?: number; account?: AccountInfo; notifications?: NotificationItem[] }) {
   const path = usePathname();
   return (
     <header className="sticky top-0 z-30 border-b border-ink bg-paper">
@@ -53,10 +54,13 @@ export function Masthead({ nav, figures = [], wire, unread = 0, account }: { nav
               ))}
             </dl>
           ) : null}
-          <button type="button" aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"} className="relative -mr-3 inline-flex size-11 items-center justify-center hover:text-vermilion-ink">
-            <Icon name="bell" />
-            {unread ? <span aria-hidden="true" className="absolute right-2.5 top-2.5 size-2 rounded-full bg-vermilion" /> : null}
-          </button>
+          {notifications ? (
+            <NotificationsMenu items={notifications} unread={unread} />
+          ) : (
+            <button type="button" aria-label="Notifications" className="relative -mr-3 inline-flex size-11 items-center justify-center hover:text-vermilion-ink">
+              <Icon name="bell" />
+            </button>
+          )}
           {account ? <AccountMenu account={account} /> : null}
         </div>
       </div>

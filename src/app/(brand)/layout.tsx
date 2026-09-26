@@ -7,7 +7,7 @@ export default async function BrandLayout({ children }: { children: ReactNode })
   const s = await requireRole("brand", "/desk");
   const chrome = await brandChrome(s.accountId);
   return (
-    <AppShell nav={BRAND_NAV} figures={chrome.figures} wire={chrome.wire} unread={chrome.unread} account={{ name: s.displayName, email: s.email, role: "brand", isDemo: s.isDemo }}>
+    <AppShell nav={BRAND_NAV} figures={chrome.figures} wire={chrome.wire} unread={chrome.unread} notifications={chrome.notifications} account={{ name: s.displayName, email: s.email, role: "brand", isDemo: s.isDemo }}>
       {children}
     </AppShell>
   );

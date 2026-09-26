@@ -17,7 +17,7 @@ export function Ticker({ events }: { events: WireEvent[] }) {
           Wire
         </span>
         {shown.length === 0 ? (
-          <span className="text-muted">Quiet for now. Events appear here as they happen.</span>
+          <span className="min-w-0 truncate text-muted">Quiet for now. Events appear here as they happen.</span>
         ) : (
           <ol className="flex min-w-0 items-center gap-6 whitespace-nowrap">
             {shown.map((e, i) => (

@@ -9,7 +9,7 @@ export default async function CreatorLayout({ children }: { children: ReactNode 
   const chrome = await creatorChrome(s.accountId);
   if (!chrome.hasProfile) redirect("/onboarding");
   return (
-    <AppShell nav={CREATOR_NAV} figures={chrome.figures} wire={chrome.wire} unread={chrome.unread} account={{ name: s.displayName, email: s.email, role: "creator", isDemo: s.isDemo }}>
+    <AppShell nav={CREATOR_NAV} figures={chrome.figures} wire={chrome.wire} unread={chrome.unread} notifications={chrome.notifications} account={{ name: s.displayName, email: s.email, role: "creator", isDemo: s.isDemo }}>
       {children}
     </AppShell>
   );

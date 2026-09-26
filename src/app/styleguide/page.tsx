@@ -258,7 +258,7 @@ export default function Styleguide() {
               </div>
             ))}
           </div>
-          <EmptyState title="Write your first brief" body="Say who you want to reach and what you can spend. The lineup assembles as you type." action={<Button variant="primary">Open the desk</Button>} />
+          <EmptyState level={3} title="Write your first brief" body="Say who you want to reach and what you can spend. The lineup assembles as you type." action={<Button variant="primary">Open the desk</Button>} />
         </div>
       </Section>
     </AppShell>
