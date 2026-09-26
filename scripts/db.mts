@@ -135,7 +135,7 @@ async function cleanupE2e(c: pg.Client, email = ""): Promise<void> {
     await c.query("update creators c set balance_cents = coalesce((select sum(amount_cents) from ledger_entries l where l.creator_id = c.id and l.account = 'creator_balance'), 0)");
     await c.query("select app.seed_demo_state()");
     await c.query("commit");
-    console.log(`removed ${gone.rowCount ?? 0} account(s)${who ? ` (including ${who})` : ""}`);
+    console.log(`removed ${gone.rowCount ?? 0} account(s)`); // never echo the address: output tends to get pasted into a public log
   } catch (e) {
     await c.query("rollback").catch(() => {});
     throw e;
