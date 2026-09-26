@@ -13,6 +13,7 @@ decisions in [DECISIONS.md](DECISIONS.md); visual rules in [design/BRIEF.md](des
 > - **Phase 7:** `/api/lineup` takes `budget` in whole euros (not cents); the landing live desk and `/developers` use the same shape code; a brief can travel in a URL (`lib/brief-params`).
 > - **Phase 5–6:** creator RPCs `save_creator_profile` and `save_draft`; `set_receipt_public`; the Wire carries human clicks in 5-minute buckets (last 7 days); Receipts label the impressions source; `/go/[code]` is a route handler (302 first, click recorded after).
 > - Extra RPCs: `create_account` and `link_lookup` / `record_click` (owner-only). `/go/[code]` uses `link_lookup` then `record_click`. `bookings` gains `auto_at`. `shortlist_requests` does not exist (D-037).
+> **Amendments made in Phase 8 (D-092 … D-096):** sign-in returns you to the exact page you asked for (a proxy passes the requested URL to server components); the session cookie is `Secure` when the request came over HTTPS rather than by `NODE_ENV`; compact controls apply to fine pointers, not to a viewport width; the tray sheet pins the hold button; dialogs return focus; every page has a skip link.
 
 ---
 

@@ -543,3 +543,63 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** Kits are public shop windows; Receipts are unlisted by design (D-038) and must stay out of search.
 **Rejected:** Indexing everything; no robots file.
 **Status:** Active. Needs `NEXT_PUBLIC_SITE_URL` once deployed.
+
+### D-090 · 2026-09-26T13:40Z · Phase 8
+**Decision:** **Nothing fails ugly.** `loading.tsx` skeletons for both app areas (same grid as the real page, so no layout shift); `error.tsx` at the root and in each area plus `global-error.tsx`, each with a retry and a plain-language message; security headers on every response (`X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, no `X-Powered-By`) and, in production only, a CSP (`default-src 'self'`, inline scripts/styles allowed because Next's bootstrap is inline and nonces would make every page dynamic; `frame-ancestors 'none'`, `object-src 'none'`, `form-action 'self'`) and HSTS. **`/go/[code]` answers a database outage with a 503 page and `Retry-After`, never a raw 500**: that link sits on someone else's LinkedIn post.
+**Why:** The tracked link and the app are what strangers touch first; a graceful failure is part of the product. Outage drill: database stopped → landing still renders with an explanation, `/go` returns the 503, app pages show the error panel; restarted → everything recovers without a redeploy.
+**Rejected:** A nonce-based CSP (forces dynamic rendering everywhere, costs caching for a marginal gain here); a spinner-only loading state.
+**Status:** Active.
+
+### D-091 · 2026-09-26T13:40Z · Phase 8
+**Decision:** **End-to-end tests run against the production build and a freshly reset real Postgres**, in numbered specs that share one database and run serially (read-only first, mutating last): (1) security and roles, (2) 18 screens × 7 widths (320 → 1920) each checking horizontal overflow, axe WCAG 2.2 AA, 44 px touch targets on touch widths, and a silent console, (3) the **golden loop with two brand-new people** through the real UI (join, price, brief, fund, hold, accept, draft, changes, revise, approve, live, three readers, payout, public Receipt) followed by an audit of the whole ledger, (4) keyboard and reduced motion, (5) concurrency and privilege (double Release, accept vs decline, racing holds, cross-role writes), (6) an iPhone-sized **WebKit** run of the money path. 59 tests; `npm run e2e` locally, and CI runs it after the build with Chromium and WebKit installed.
+**Why:** The claim is a working product; the tests exercise it the way a stranger would, on the artefact that ships, and they found five real defects (D-092 … D-096) that unit and SQL tests could not.
+**Rejected:** Mocking the database in e2e; testing only against `next dev` (different code paths, no CSP); a single giant test.
+**Status:** Active. Test-only accommodations, each commented where it lives: axe's `target-size` is off (a sticky bar covering a button at the current scroll position counts as "undersized"; our own 44 px measurement is stricter); the 404 page's console line is expected; Safari's "access control checks" line for a link prefetch cancelled by navigation is ignored.
+
+### D-092 · 2026-09-26T13:40Z · Phase 8
+**Decision:** **Deep links survive sign-in.** `src/proxy.ts` passes the requested path and query to server components (`x-byline-here`, `_rsc` stripped); `requireRole` uses it for the `next` parameter, and `safeNext` still allows same-site paths only.
+**Why:** Found by e2e: opening `/campaigns/<id>` signed out sent you to `/desk` afterwards, because the area's layout redirects before the page can. Anyone following a link from a notification lost their place.
+**Rejected:** Passing the path from every page (the layout runs first anyway); a cookie.
+**Status:** Active. Off-site `next` values (`https://…`, `//…`, `/\…`) are tested to fall back to the home page.
+
+### D-093 · 2026-09-26T13:40Z · Phase 8
+**Decision:** **The session cookie is `Secure` only when the request arrived over HTTPS** (`x-forwarded-proto`), not whenever `NODE_ENV` is production. Still `HttpOnly`, `SameSite=Lax`.
+**Why:** Found by the WebKit run: Safari refuses `Secure` cookies on `http://localhost`, so anyone running the production build locally in Safari could not stay signed in (the server actions answered "session ended"). On Vercel the header is always `https`, so nothing changes there.
+**Rejected:** Dropping `Secure` in production (weaker); telling reviewers to use Chrome.
+**Status:** Active.
+
+### D-094 · 2026-09-26T13:40Z · Phase 8
+**Decision:** **Compact controls are for fine pointers, not for a width.** Small buttons and the brief-sentence chips are 44 px tall by default and 36 px only under `pointer-fine`; the responsive test runs widths up to 1024 as a touch device (`hasTouch`) and wider as a mouse. Replaces the `md:` breakpoint approach.
+**Why:** An iPad at 768 or 1024 is a touch device; a breakpoint made its buttons 36 px.
+**Rejected:** Making everything 44 px on desktop (a roster of dense rows needs the density).
+**Status:** Active.
+
+### D-095 · 2026-09-26T13:40Z · Phase 8
+**Decision:** **On phones the tray sheet pins its primary action.** The hold button sticks to the bottom edge of the sheet (with the safe-area inset), so it is never below the fold on a 667 px screen; the sheet no longer pads for the inset itself.
+**Why:** Found on an iPhone-sized WebKit run: the hold button sat 200 px below the fold under totals and a budget meter, so the core action needed a scroll inside a scroll.
+**Rejected:** Shrinking the summary (it is the point of the tray).
+**Status:** Active.
+
+### D-096 · 2026-09-26T13:40Z · Phase 8
+**Decision:** **Keyboard pass.** One skip link in the root layout (every page's `<main>` is `id="main"`), replacing the app shell's private one; sheets and confirmation dialogs remember what had focus when they opened and give it back on close.
+**Why:** Found by the keyboard e2e: our dialogs open from state (a hold button, a table row), so Radix, which returns focus to a Trigger, dropped focus to `<body>`; public pages had no skip link at all.
+**Rejected:** Wrapping every opener in `Dialog.Trigger` (the openers are conditional and live in other components).
+**Status:** Active. Tested: Tab order shows a focus ring on every stop; the hold is fully operable by keyboard; Escape returns focus; with reduced motion one click opens the confirmation.
+
+### D-097 · 2026-09-26T13:40Z · Phase 8
+**Decision:** **Concurrency and privilege are tested, not assumed.** Two Release calls at once pay once; accept and decline at once leave exactly one winner and a ledger that adds up; two holds that together exceed the wallet cannot both succeed (`insufficient_funds`, wallet never negative); a creator or the wrong brand cannot approve, pay, insert ledger rows or edit a balance. The whole-database audit (transactions net to zero, caches equal ledger, escrow equals price for open deals and zero for closed ones, no negative wallet) runs after the golden loop and after these.
+**Why:** Money is the one place a double-click must not matter.
+**Rejected:** Relying on the UI's disabled-while-pending state.
+**Status:** Active.
+
+### D-098 · 2026-09-26T13:40Z · Phase 8
+**Decision:** **Quality bar, measured.** Lighthouse (mobile, simulated slow 4G, production build): landing 91 / 100 / 100 / 100 (performance / accessibility / best practices / SEO), creator kit 96 / 100 / 100 / 100, developers 96 / 100 / 100 / 100, sign-in 96 / 100 / 100 / 100, Receipt 94 / 100 / 100 / 63; the landing scores 99 with applied throttling (LCP 1.7 s, TBT 20 ms, CLS 0). The Receipt's SEO 63 is deliberate: it is `noindex` (D-038, D-089). Back/forward cache is not used because dynamic pages send `no-store`; accepted. Real **iOS Safari** (simulator, iPhone SE 3rd generation, iOS 18.3, 375 × 667): landing, creator kit, Receipt and developers render correctly; interactive flows are covered by the WebKit run because access to drive the simulator's touch input was not granted.
+**Why:** "Best of the best" needs numbers, and honest ones.
+**Rejected:** Chasing a 100 on the simulated-throttle performance score (the remaining gap is the model's font-swap pessimism, not the page).
+**Status:** Active.
+
+### D-099 · 2026-09-26T13:40Z · Phase 8
+**Decision:** Another party's booking or campaign returns the **not-found page** (not 403), so it does not confirm the id exists. Because the page streams behind a `loading.tsx` skeleton, the HTTP status is 200 with the not-found body and `noindex`; nothing about the record is in the response. Accepted for private, `Disallow`ed pages.
+**Why:** Keeping the skeletons (D-090) is worth more than a 404 status on pages no crawler may visit.
+**Rejected:** Removing `loading.tsx` from detail routes.
+**Status:** Active.

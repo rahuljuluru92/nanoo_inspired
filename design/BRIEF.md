@@ -119,3 +119,9 @@ Newsroom wire copy and datelines · printed receipts and boarding passes · stoc
 | Interaction | floating AI prompt bar | the brief sentence is the search |
 **Result:** a stranger would not confuse them at a glance, at a squint, or by structure. Shared conventions (an accordion FAQ, a pricing section, a primary/secondary CTA pair) are universal patterns, executed differently. The earlier caveat (D-… "design system only") is now closed for the landing page and the desk.
 
+## 15. Phase 8 outcome (harden)
+- **Touch first.** Controls are 44 px tall by default; the compact 36 px size exists only for `pointer-fine` devices. A width never decides it (an iPad at 768 or 1024 is touch). Tested at 320 / 375 / 768 / 1024 (touch) and 1280 / 1536 / 1920 (mouse) on every screen.
+- **The primary action is never below the fold.** On phones the tray sheet pins the hold button to its bottom edge, inset by the safe area.
+- **Keyboard is a first-class path.** One skip link on every page; a visible 2 px ink outline on every stop; dialogs and sheets return focus to what opened them; the hold is fully operable with Enter (and, under reduced motion, with a click) and opens the same confirmation.
+- **Failing gracefully is designed.** Skeletons match the real grid; every error boundary has a retry and a plain sentence; a database outage never shows a raw 500 (the tracked link answers 503 with Retry-After).
+- **Measured, not asserted.** axe (WCAG 2.2 AA + best practice) clean on 18 screens at 320 / 768 / 1280; Lighthouse mobile 91–96 performance and 100 accessibility, best practices, SEO (Receipt is `noindex` by design). Real iOS Safari (iPhone SE, iOS 18.3) renders the landing page, creator kit, Receipt and developers page as designed.
