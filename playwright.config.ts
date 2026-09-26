@@ -26,7 +26,8 @@ export default defineConfig({
     ? undefined
     : {
         command: `node node_modules/next/dist/bin/next start -p ${PORT}`,
-        url: `http://localhost:${PORT}/api/health`,
+        // Not /api/health: Playwright starts this server BEFORE globalSetup migrates the database, and health is 503 on an empty one (CI).
+        url: `http://localhost:${PORT}/login`,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
         env: { DATABASE_URL: DB, CLICK_HASH_SECRET: "e2e-secret", NEXT_PUBLIC_SITE_URL: `http://localhost:${PORT}` },
