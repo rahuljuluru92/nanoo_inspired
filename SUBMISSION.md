@@ -68,7 +68,7 @@ Don't read from a script; a phone propped at eye level with a window in front of
 ## Links block (paste into the form)
 
 ```
-Live:         <LIVE_URL>
+Live:         https://nanooinspired.vercel.app
 Repo:         https://github.com/rahuljuluru92/nanoo_inspired
 Walkthrough:  <WALKTHROUGH_URL>
 Intro:        <INTRO_URL>

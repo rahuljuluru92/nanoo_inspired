@@ -12,7 +12,7 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 ---
 
 ## STATUS  _(update at the end of every phase/slice)_
-**Last updated:** 2026-09-26T14:50Z · **Current phase: 9 — Ship: agent side DONE, blocked on the live URL** (needs the hosted Postgres + Vercel; the user does those) · Clock started 2026-09-26T05:09Z
+**Last updated:** 2026-09-26T16:18Z · **Current phase: 9 — Ship: DEPLOYED (https://nanooinspired.vercel.app), e2e-verified live; only the two videos remain** (user) · Clock started 2026-09-26T05:09Z
 
 **Done**
 - **Phases 0–6:** capture, spec/design, design system, portable-Postgres backend, brand desk, creator side, the closed loop (D-001 … D-084).
@@ -26,13 +26,12 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 **In progress**
 - **User:** logged-in Naano walkthrough (`recon/`); canary 3.
 
-**Next** (all of it follows the live URL; the order is in SUBMISSION.md)
-- User: create Neon (or Supabase) + Vercel (DEPLOY.md), put the direct URL in `.env.remote`, tell the agent to run `npm run db:remote -- check|migrate|seed`.
-- Agent: `npm run e2e:live`, fill the README's three links, final commit with the logs, push (only when told), `npm run submission:check`.
-- User: record the 5-min walkthrough (camera on) and the 1-min intro (something not on the CV).
+**Next** (order in SUBMISSION.md)
+- User: `npm run db:remote -- reset-demo`, then record the 5-min walkthrough (camera on) and the 1-min intro (something not on the CV); upload both with link sharing on.
+- Agent: put the two video links in the README, final commit with the logs, push, `npm run submission:check` → "ready to submit".
 
 **Open blockers / awaiting the user**
-1. **Vercel** (the hosted Postgres is done: Neon, migrated + seeded + e2e-verified, D-106). Create the Vercel project from the GitHub repo; env `DATABASE_URL` = the **pooled** Neon string, `CLICK_HASH_SECRET` = random. Needs a push first (user decides when). **Original note:** hosted Postgres + Vercel: create a free Supabase or Neon project + a Vercel account linked to GitHub. Pooled `DATABASE_URL` in `.env.local` and Vercel env — **never in chat**. Then `DATABASE_URL=… npm run db:migrate && npm run db:seed`; set `NEXT_PUBLIC_SITE_URL`. **Critical path: there is still no live URL.**
+1. ~~Hosted Postgres + Vercel~~ **done**: Neon + Vercel, live at https://nanooinspired.vercel.app (D-106, D-108). Original note: create a free Supabase or Neon project + a Vercel account linked to GitHub. Pooled `DATABASE_URL` in `.env.local` and Vercel env — **never in chat**. Then `DATABASE_URL=… npm run db:migrate && npm run db:seed`; set `NEXT_PUBLIC_SITE_URL`. **Critical path: there is still no live URL.**
 2. Naano logged-in walkthrough (agent cannot sign up).
 3. Canary 3 (fresh desktop session; first PROMPT must show `claude-sonnet-5`).
 4. Author handle (`rahuljuluru92` vs `rahuljuluru786`, D-008); design direction + name "Byline"; AI brief parsing needs an Anthropic key (default off).
@@ -111,7 +110,7 @@ approve→payout · tracked links `/go/[code]` + real click events · Wire · Re
 | 6 | Slice C — approve → live → payout; `/go/[code]`; Wire; Receipt; Run-of-show | 150 min | **done** (D-077 … D-084) |
 | 7 | Landing (live desk, pricing section) + public media kit + API | 90 min | **done** (D-085 … D-089); the kit shipped in Phase 5 |
 | 8 | Harden + polish (responsive matrix, iOS Safari, a11y, e2e) | 90 min | **done** (D-090 … D-099); e2e runs on a local production build — re-run it against the live URL once deployed |
-| 9 | Ship (README, walkthrough, intro, submission) | 60–90 min | **agent side done** (D-100 … D-105): README, DEPLOY, SUBMISSION, deploy tooling, submission gate. **Pending the user:** hosted DB + Vercel, then walkthrough + intro videos |
+| 9 | Ship (README, walkthrough, intro, submission) | 60–90 min | **deployed and verified live** (D-100 … D-108): README, DEPLOY, SUBMISSION, submission gate, Neon + Vercel, e2e on the live URL. **Pending the user:** walkthrough + intro videos |
 
 Golden path (demo + e2e): anonymous brief on landing → real lineup → demo brand adds 3 creators → tray projection → hold to commit → creator (phone) accepts + drafts →
 brand approves → creator goes live with URL → payout releases → tracked link opened → Wire ticks, clicks +1 live → Receipt shareable.

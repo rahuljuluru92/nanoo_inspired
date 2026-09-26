@@ -6,7 +6,7 @@
 
 | | |
 |---|---|
-| **Live** | LIVE_URL |
+| **Live** | https://nanooinspired.vercel.app |
 | **Walkthrough (≤ 5 min)** | WALKTHROUGH_URL |
 | **Intro (1 min)** | INTRO_URL |
 | **Try it without signing up** | open the live site → *Enter as the demo brand* (or *demo creator*) |

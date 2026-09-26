@@ -50,6 +50,8 @@ test("a phone: landing → demo brand → lineup → hold → campaign, then the
   // bottom tabs navigate on a phone
   await page.getByRole("link", { name: "Wallet" }).last().click();
   await expect(page).toHaveURL(/\/wallet/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.waitForLoadState("networkidle"); // let the client navigation finish before we start another one (a goto would interrupt it)
   expect(await overflowPx(page)).toBe(0);
 
   // a reader's view: the public creator kit and a Receipt
@@ -68,6 +70,7 @@ test("a phone: the demo creator accepts an offer", async ({ page }) => {
   expect(await overflowPx(page)).toBe(0);
   await page.getByRole("button", { name: "Accept" }).first().click();
   await expect(page.getByRole("status").filter({ hasText: "Offer accepted" }).first()).toBeVisible();
+  await page.waitForLoadState("networkidle"); // the action's router.refresh() is still in flight; let it land
   await page.goto("/earnings");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await overflowPx(page)).toBe(0);
