@@ -9,7 +9,7 @@
 | **Live** | https://nanooinspired.vercel.app |
 | **Walkthrough (≤ 5 min)** | WALKTHROUGH_URL |
 | **Intro (1 min)** | INTRO_URL |
-| **Try it without signing up** | open the live site → *Enter as the demo brand* (or *demo creator*) |
+| **Try it without signing up** | open the live site → *Enter as the demo brand* / *Enter as the demo creator* (one click, no credentials). Or type them: `demo.brand@byline.test` / `demo.creator@byline.test`, password `byline-demo` (shared, fictional data, resettable). To be both roles at once, use a second browser or a private window. Real accounts: `/join` (any email, no verification) |
 
 > Built for the 8x Engineering assignment: rebuild the *idea* behind a B2B LinkedIn-creator marketplace as an original product, with our own interface and a real backend (a working database and API, no mocked responses). Everything here was built with an AI coding agent; the whole conversation is in [`.agent-logs/`](.agent-logs), the plan and its live status in [`CLAUDE.md`](CLAUDE.md), and every decision, with what was rejected and why, in [`DECISIONS.md`](DECISIONS.md) (D-001 … D-099+).
 
