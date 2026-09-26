@@ -12,29 +12,31 @@ Scored on speed · product judgement (what built/cut) · UX/UI · how the agent 
 ---
 
 ## STATUS  _(update at the end of every phase/slice)_
-**Last updated:** 2026-09-26T06:58Z · **Current phase: 4 — Brief → Lineup → Tray → commit: DONE** · Phase 5 (creator side) next · Clock started 2026-09-26T05:09Z
+**Last updated:** 2026-09-26T12:18Z · **Current phase: 5 — Creator side: DONE** · Phase 6 (close the loop) in progress · Clock started 2026-09-26T05:09Z
 
 **Done**
-- **Phases 0–3:** capture hook, repo, spec + design brief, design system + shell, portable-Postgres backend with RLS/RPCs/seed/auth (D-001 … D-061). Phase 3's *deploy* still needs a hosted Postgres (blocker 1).
-- **Phase 4:** `/desk` (sentence-as-search, live-ranked lineup with fit + reasons, tray with projection / cost per click / budget bar, campaign details with inline validation, hold-to-commit → one transaction creating the campaign and placing the escrow hold, add-test-funds from the tray), `/campaigns` + `/campaigns/[id]` (summary + bookings, auto-refreshing while sandbox creators reply), `/wallet` (ledger + top-up), `/wire`, read-only creator `/offers`. Decisions D-062 … D-068.
-- **Verified:** typecheck, lint, 28 unit tests (13 on fit/projection), 5 SQL suites, production build. Live, against the real DB: full desktop and **phone** journeys (pick → details → shortfall → add funds → commit), sandbox creators accepting/declining/drafting on their own, refunds reconciling to the euro, **cross-user** (a brand-new account's offer appears on the demo creator's side), wrong-password and unknown-email messages identical, sign-out, registration validation. Money invariants re-audited after live use (ledger nets to zero, caches = ledger, escrow = price). axe: 0 violations on desk, campaigns, campaign, wallet, wire, login, join at 375 (and 1280 for the brand pages); no horizontal overflow; all touch targets ≥ 44 px.
+- **Phases 0–4:** capture hook, repo, spec + design brief, design system, portable-Postgres backend, brand desk (D-001 … D-068).
+- **Phase 5 (D-069 … D-076):** creator sign-up (`/join`), `/onboarding`, `/kit` editor, public `/c/[handle]`; `/offers` (accept/decline), `/deals` (pipeline), `/deals/[id]` (autosaving draft → submit → revise → go live → tracked link → stats), `/earnings`; notifications bell for both roles; migration 0007 (`save_creator_profile`, `save_draft`, clicks on the Wire); suite 06.
+- **Verified:** typecheck, lint, 38 unit tests, 6 SQL suites (incl. the new PUBLIC-execute audit), production-style flows on a **phone-sized** screen against the real DB (join → onboarding → kit → offers → accept → deals → draft → autosave → submit), desktop layouts, axe 0 violations on the creator pages, notifications read/clear.
+- **Found and fixed:** functions created after migration 0005 were executable by PUBLIC (D-069, corrects D-052); arrow-function server actions break the Next build (D-075).
 
 **In progress**
+- **Phase 6:** brand review actions (approve / request changes / cancel / release payout), `/go/[code]` tracking with bot filtering, Receipt page, Run-of-show, live counters.
 - **User:** logged-in Naano walkthrough (`recon/`); canary 3.
 
 **Next**
-- **Phase 5 — creator side (mobile-first):** creator sign-up + onboarding + public media kit, offers inbox with accept/decline, deliver form (autosaving draft, submit, mark live), earnings. Then Phase 6 (approve/request changes/payout on the brand side, `/go/[code]`, Wire polling, Receipt, Run-of-show).
+- Phase 7 (landing with the live desk, pricing section, API), Phase 8 (harden: responsive matrix incl. iOS Safari, e2e on the live URL), Phase 9 (ship).
 
 **Open blockers / awaiting the user**
-1. **Hosted Postgres + Vercel** (for the Phase 3 *deploy* exit test): create a free Supabase or Neon project + a Vercel account linked to GitHub. Put the pooled `DATABASE_URL` in `.env.local` and Vercel env — **never in chat**. Then `DATABASE_URL=… npm run db:migrate && npm run db:seed`.
+1. **Hosted Postgres + Vercel** (for the deploy exit tests): create a free Supabase or Neon project + a Vercel account linked to GitHub. Pooled `DATABASE_URL` in `.env.local` and Vercel env — **never in chat**. Then `DATABASE_URL=… npm run db:migrate && npm run db:seed`.
 2. Naano logged-in walkthrough (agent cannot sign up).
 3. Canary 3 (fresh desktop session; first PROMPT must show `claude-sonnet-5`).
 4. Author handle (`rahuljuluru92` vs `rahuljuluru786`, D-008); design direction + name "Byline"; AI brief parsing needs an Anthropic key (default off).
-5. **Push policy:** four local commits are ahead of `origin` — push at each phase end? Two sessions share the tree; commit from one at a time (D-027).
+5. **Push policy:** local commits are ahead of `origin` (nothing pushed). Two sessions share the tree; commit from one at a time (D-027).
 
 ---
 
-## Concept## Concept## Concept## Concept## Concept — four nouns (use these words in UI **and** code)
+## Concept## Concept## Concept## Concept## Concept## Concept — four nouns (use these words in UI **and** code)
 > **Brief → Lineup → Wire → Receipt.** Brands write a **Brief**, assemble a **Lineup**, watch the **Wire**, keep a **Receipt**.
 > Creators get **Offers**, file a **Draft**, go **Live**, get **Paid**, and build a media kit of verified Receipts.
 
@@ -99,7 +101,7 @@ approve→payout · tracked links `/go/[code]` + real click events · Wire · Re
 | 2 | Design system + shell (`/styleguide`) | 90 min | **done** (D-042 … D-050) |
 | 3 | Data foundation (`db/`: migrations, RLS, RPCs, seed, auth, demo logins) | 90 min | **done locally** (D-051 … D-061); **deploy pending** a hosted Postgres |
 | 4 | Slice A — Brief → Lineup → Tray → hold-to-commit escrow | 150 min | **done** (D-062 … D-068) |
-| 5 | Slice B — Creator side (mobile-first) | 120 min | not started |
+| 5 | Slice B — Creator side (mobile-first) | 120 min | **done** (D-069 … D-076) |
 | 6 | Slice C — approve → live → payout; `/go/[code]`; Wire; Receipt; Run-of-show | 150 min | not started |
 | 7 | Landing (live desk, pricing section) + public media kit + API | 90 min | not started |
 | 8 | Harden + polish (responsive matrix, iOS Safari, a11y, e2e on live URL) | 90 min | not started |
@@ -123,6 +125,7 @@ recon/                     screenshots + notes from the logged-in Naano walkthro
 db/{migrations/, seed/, tests/}              SQL is the source of truth for the schema + RPCs (+ scripts/db.mts, scripts/db-local.sh)
 src/app/(public)/ (brand)/ (creator)/         route groups · api/ · go/[code] · receipt/[code] · c/[handle]
 src/components/{ui,desk,wire,receipt,shell,art}/   built: primitives, desk (BriefSentence/RosterRow/Tray/HoldButton), wire, receipt (+RunOfShow), shell, art (Halftone/Wordmark)
+src/components/creator/                        offer card, deal panel (editor / go-live / live), profile form, share mix, copy field
 src/lib/                                      built: cn, money, time, halftone, types, use-reduced-motion, db, auth, errors, password, rate-limit, demo, taxonomy, fit, projection · queries/ (chrome, desk, tick)
 src/app/styleguide/                           dev-only design-system page + fixtures (fictional data)
 src/styles/tokens.css                         design tokens (the only place hex values live)
@@ -144,6 +147,8 @@ If `next dev` ever re-adds a boilerplate block to this file, `agentRules: false`
 
 **Rules of the road**
 - State changes and money **only via RPCs**; RLS on every table; brands see only their campaigns, creators only their bookings, public sees only kits + receipts. **User requests use `asUser()` (drops to `byline_user`); `asOwner()` is for sessions, account creation and click recording only** (D-052).
+- **Server-action files export literal `async function`s only** (D-075). Creator pages use `requireRole('creator', path)` and `loadDeals/loadDeal` (RLS-scoped); the creator layout redirects to `/onboarding` until a profile exists.
+- **Commit at each coherent slice, then a phase docs commit** (D-076); no pushing until the user says so.
 - **Every brand page awaits `tickSandbox(userId)` before reading** (D-064). Server actions return `{ ok, error: AppError }`, never throw raw DB errors (`toAppError`).
 - Migrations are mutable until the first deploy (D-056); after that, append-only. Money is integer cents; every ledger transaction nets to zero (enforced by a deferred trigger).
 - No hard-coded hex or font names in components — tokens only (enforced by the constrained Tailwind theme, D-043). No shadows, no smooth gradients.

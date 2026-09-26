@@ -417,3 +417,51 @@ from the session timeline (timestamps are the turn in which the call was made, f
 **Why:** Each is off the golden path for this slice.
 **Rejected:** Building them now.
 **Status:** Active.
+
+### D-069 · 2026-09-26T12:18Z · Phase 5
+**Decision:** **Function privileges are stripped with the global form** `ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC` (edited into migration 0005, which is still mutable, D-056), and suite 03 now asserts that **no function in `public` or `app` is executable by PUBLIC**.
+**Why:** Found by the Phase 5 suite: the `IN SCHEMA` form can only *add* privileges to the global defaults, so every function created after 0005 (including `reset_demo` and the `app.seed_*` helpers) had been executable by anyone. Each still refused unauthorised callers, so nothing was exploitable, but D-052's "nothing is callable by default" was not true until now.
+**Rejected:** Adding explicit `REVOKE`s at the end of each migration (easy to forget); leaving it because every function checks the caller.
+**Status:** Active. **Corrects** the claim in D-052.
+
+### D-070 · 2026-09-26T12:18Z · Phase 5
+**Decision:** **Creators self-serve their profile** through `save_creator_profile` (validated in the form, the server action and the database): handle rules and uniqueness, rate €20–€5,000, one to three verticals, self-reported audience shares. Typical impressions default to 18% of followers (range 0.7×–1.4×) and CTR starts at a neutral 1.00%. New creators are neither `verified` nor sandbox, and no "Verified" badge is shown anywhere.
+**Why:** Real creators must appear in the brand catalogue on their own terms; we cannot verify LinkedIn stats (D-040), so pretending to would be dishonest.
+**Rejected:** Admin-created creators only; auto-verifying self-reported numbers; asking for LinkedIn OAuth.
+**Status:** Active.
+
+### D-071 · 2026-09-26T12:18Z · Phase 5
+**Decision:** **Drafts autosave** through `save_draft`, which stores the text without changing the booking's state or version; the client debounces 1.2 s after typing stops, and the server action skips revalidation so typing is never interrupted. Submitting is a separate, explicit act.
+**Why:** Nobody should lose a draft; autosave must not be mistaken for a submission or notify the brand.
+**Rejected:** Saving only on submit; localStorage drafts (lost across devices).
+**Status:** Active. Verified: status went Unsaved → Saved, database held the text with the booking still `accepted`, version 0.
+
+### D-072 · 2026-09-26T12:18Z · Phase 5
+**Decision:** Creator information architecture: **Offers** is only the decision inbox (invited bookings, two big buttons); **Deals** is the pipeline by stage (To write · In review · To post · Live · Paid) with the next action named on every card; **Deal** is the one page where you do the next thing. Phones stack the stages; ≥1280 px shows a five-column board.
+**Why:** One decision per screen on a phone; the pipeline answers "what do I owe whom" at a glance.
+**Rejected:** A single mixed list; a kanban on phones.
+**Status:** Active.
+
+### D-073 · 2026-09-26T12:18Z · Phase 5
+**Decision:** Creator sign-up is open in `/join`; a creator without a profile is redirected to `/onboarding` from every creator page. The public media kit `/c/[handle]` was built now (planned for Phase 7) because the kit editor previews it.
+**Why:** The creator flow is not real until a stranger can join, set a price and be bookable. The kit is the natural preview target.
+**Rejected:** Leaving creator sign-up as "opens in the next release" until Phase 7.
+**Status:** Active. **Reverses** the creator-sign-up part of D-068.
+
+### D-074 · 2026-09-26T12:18Z · Phase 5
+**Decision:** **Notifications are real for both roles**: the bell opens the latest 8 with unread highlighted and a "Mark all read" action (`mark_notifications_read`); a creator's ticker carries their notifications.
+**Why:** A bell that does nothing is worse than none.
+**Rejected:** A decorative bell; a full notifications page.
+**Status:** Active.
+
+### D-075 · 2026-09-26T12:18Z · Phase 5
+**Decision:** **Process:** every server-action file must export literal `async function`s (arrow functions that return promises fail the Next build). Typecheck and lint do not catch this, so visual verification always checks the dev error overlay.
+**Why:** Found only because a screenshot showed the overlay.
+**Rejected:** Trusting tsc + eslint.
+**Status:** Active.
+
+### D-076 · 2026-09-26T12:18Z · Phase 5
+**Decision:** **Commit cadence:** commit at each coherent slice inside a phase (database, then each UI slice), each with the logs, and finish every phase with a docs commit (CLAUDE.md status + DECISIONS). Nothing is pushed until the user says so.
+**Why:** The user asked for history that shows the real build order; per-phase commits alone hid the slices.
+**Rejected:** One commit per phase; one commit per file.
+**Status:** Active. Phases 0–4 were committed per phase; Phase 5 onward per slice.
